@@ -57,7 +57,7 @@ def parse_xml_to_dict(element):
     elif element.tag == "struct":
         # struct is the wrapper around features
         # we are interested in the features, which are children of struct, hence we continue with the first entry of
-        # struct (struct only has one entry!)
+        # struct (struct only has one entry! -> Which is the root feature. Feature models always have just one root feature!)
         child = next(iter(element))
         child_data = parse_xml_to_dict(child)
         child_name = child.attrib.get("name")
@@ -222,10 +222,49 @@ def merge_children(c1: dict, c2: dict) -> dict:
             attrs = {k: v for k, v in child_attrs.items() if k != "mandatory"}
             result_dict.update({child: {"attributes": attrs, "children": {}}})
         else:
-            # case 2: child occurs in both feature models, but has in different parent
+            # case 2: child occurs in both feature models, but has a different parent
             # ToDo: not yet clear how to handle this case, needs further discussion
             pass
     return result_dict
+
+def create_constraints(f1: dict, f2: dict, con: dict) -> dict:
+    """get features that only exist in feature model 1 (f1) and features that only exist in feature model 2 (f2)
+    if there are no such features no constraints will be added
+    if there exists these features, we will create requires or exclude constraints (con) to maintain only the variants that exist at the current state of time
+    """
+    fm1_keys = find_and_filter_all_keys(f1)
+    fm2_keys = find_and_filter_all_keys(f2)
+    # system/module/component is not included in both fms
+    diff_comp_in_fm1 = []
+    diff_comp_in_fm2 = []
+    for x in fm1_keys:
+        if x not in fm2_keys:
+            diff_comp_in_fm1.append(x)
+    for y in fm2_keys:
+        if y not in fm1_keys:
+            diff_comp_in_fm2.append(y)
+    # create constraints so that only the two variants compared can be selected
+    # excludes constraints are created for the features that do not occur in fm 1 -> same is applied to fm 2
+    # requires constraints between the features of fm 1, which do not occur in fm 2 -> same is applied to fm 2
+    excludes = {}
+    requires = {}
+    for x in range(len(diff_comp_in_fm1)):
+        excludes[diff_comp_in_fm1[x]] = diff_comp_in_fm2
+    for x in range(len(diff_comp_in_fm2)):
+        excludes[diff_comp_in_fm2[x]] = diff_comp_in_fm1
+    con.update({"eq": excludes})
+    for x in diff_comp_in_fm1:
+        required_features = diff_comp_in_fm1.copy()
+        required_features.remove(x)
+        if required_features:
+            requires[x] = required_features
+    for x in diff_comp_in_fm2:
+        required_features = diff_comp_in_fm2.copy()
+        required_features.remove(x)
+        if required_features:
+            requires[x] = required_features
+    con.update({"imp": requires})
+    return con
 
 
 def get_feature_element(d: dict, e: str, k: str = "") -> dict:
@@ -245,10 +284,22 @@ def get_element_trees(file1: str, file2: str) -> tuple["Element", "Element"]:
     root2 = tree2.getroot()
     return root1, root2
 
+def prettify(element, indent="  "):
+    queue = [(0, element)]  # (level, element)
+    while queue:
+        level, element = queue.pop(0)
+        children = [(level + 1, child) for child in list(element)]
+        if children:
+            element.text = "\n" + indent * (level + 1)  # for child open
+        if queue:
+            element.tail = "\n" + indent * queue[0][0]  # for sibling open
+        else:
+            element.tail = "\n" + indent * (level - 1)  # for parent close
+        queue[0:0] = children  # prepend so children come before siblings
 
 def main():
     # Read XML data from file
-    root1, root2 = get_element_trees("sample.xml", "sampleC.xml")
+    root1, root2 = get_element_trees("drehtischA.xml", "drehtischB.xml")
 
     # Iterate through each child element and convert XML to nested dictionary
     fm_dict1 = parse_xml_to_dict(next(iter(root1)))
@@ -286,49 +337,76 @@ def main():
     # merge children and add them to merged_dict
     recursively_merge_children(children1, children2, merged_dict, system)
 
-    # Compare each entry and create merged dict
+    # compare fms for distinct features and create requires and excludes constraints
+    constraints_dict = {}
+    create_constraints(fm_dict1, fm_dict2, constraints_dict)
 
-    fm1_keys = find_and_filter_all_keys(fm_dict1)
-    fm2_keys = find_and_filter_all_keys(fm_dict2)
-    for x in fm1_keys:
-        for y in fm2_keys:
-            if y == x:  # root feature is equal
-                children1 = get_attributes(fm_dict1, x)
-                children2 = get_attributes(fm_dict2, x)
-            else:  # root feature is not equal
-                merged_dict.update({"root": {}})
-
-    # System/Module/Component is not included in both FMs
-    diff_comp = []
-    for x in fm1_keys:
-        if x not in fm2_keys:
-            diff_comp.append(x)
+    # define XML structure for the feature model file
+    fm_xml = ET.Element("featureModel")
+    # insert features with respective hierarchy
+    struct = ET.SubElement(fm_xml, "struct")
+    for sys_key, sys_values in merged_dict.items():
+        # ToDo: create recursive function to iterate through each level even if number of hierarchy level is unknown
+        tag = sys_values['attributes']['tag']
+        abstract = sys_values['attributes'].get('abstract')
+        mandatory = sys_values['attributes'].get('mandatory')
+        if abstract is None and mandatory is None:
+            root = ET.SubElement(struct, tag, name=f"{sys_key}")
+        elif abstract is not None:
+            root = ET.SubElement(struct, tag, abstract="true", name=f"{sys_key}")
+        elif mandatory is not None:
+            root = ET.SubElement(struct, tag, mandatory="true", name=f"{sys_key}")
+        for child_keys, child_values in sys_values['children'].items():
+            tag = child_values['attributes']['tag']
+            abstract = child_values['attributes'].get('abstract')
+            mandatory = child_values['attributes'].get('mandatory')
+            if abstract is None and mandatory is None:
+                child1 = ET.SubElement(root, tag, name=f"{child_keys}")
+            elif abstract is not None:
+                child1 = ET.SubElement(root, tag, abstract="true", name=f"{child_keys}")
+            elif mandatory is not None:
+                child1 = ET.SubElement(root, tag, mandatory="true", name=f"{child_keys}")
+    # insert requires and excludes constraints to the feature model
+    constraints = ET.SubElement(fm_xml, "constraints")
+    for feature_key in constraints_dict['eq']:
+        if len(constraints_dict['eq'][feature_key]) > 1:
+            for f_value in constraints_dict['eq'][feature_key]:
+                rule = ET.SubElement(constraints, "rule")
+                eq = ET.SubElement(rule, "eq")
+                f1 = ET.SubElement(eq, "var")
+                f1.text = feature_key
+                not_feature = ET.SubElement(eq, "not")
+                f2 = ET.SubElement(not_feature, "var")
+                f2.text = f_value
         else:
-            for y in fm2_keys:
-                if y not in fm1_keys and y not in diff_comp:
-                    diff_comp.append(y)
-
-    # Set feature to optional
-    for comp in diff_comp:
-        attributes_fm1 = get_attributes(fm_dict1, comp)
-        attributes_fm2 = get_attributes(fm_dict2, comp)
-        if attributes_fm1 is not None:
-            if attributes_fm1.get("mandatory") is not None:
-                for att in attributes_fm1.values():
-                    att["mandatory"] = False
-            else:
-                pass
+            rule = ET.SubElement(constraints, "rule")
+            eq = ET.SubElement(rule, "eq")
+            f1 = ET.SubElement(eq, "var")
+            f1.text = feature_key
+            not_feature = ET.SubElement(eq, "not")
+            f2 = ET.SubElement(not_feature, "var")
+            f2.text = constraints_dict['eq'][feature_key][0]
+    for feature_key in constraints_dict['imp']:
+        if len(constraints_dict['imp'][feature_key]) > 1:
+            for f_value in constraints_dict['imp'][feature_key]:
+                rule = ET.SubElement(constraints, "rule")
+                imp = ET.SubElement(rule, "imp")
+                f1 = ET.SubElement(imp, "var")
+                f1.text = feature_key
+                f2 = ET.SubElement(imp, "var")
+                f2.text = f_value
         else:
-            pass
-        if attributes_fm2 is not None:
-            if attributes_fm2.get("mandatory") is not None:
-                for att in attributes_fm1.values():
-                    att["mandatory"] = False
-            else:
-                pass
-        else:
-            pass
+            rule = ET.SubElement(constraints, "rule")
+            imp = ET.SubElement(rule, "imp")
+            f1 = ET.SubElement(imp, "var")
+            f1.text = feature_key
+            f2 = ET.SubElement(imp, "var")
+            f2.text = constraints_dict['imp'][feature_key][0]
 
+    prettify(fm_xml)
+
+    tree = ET.ElementTree(fm_xml)
+    tree.write("FMAB.xml", encoding="UTF-8", xml_declaration=True)
 
 if __name__ == "__main__":
     main()

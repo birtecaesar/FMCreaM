@@ -1,10 +1,9 @@
-import json
-import sys
 import xml.etree.ElementTree as ET
 from SPARQLWrapper import SPARQLWrapper, JSON, SPARQLWrapper2
 from collections import defaultdict
 
-endpoint_url = "http://localhost:7200/repositories/Drehttisch_korrigiert"
+endpoint_url = "http://localhost:7200/repositories/Drehtisch_B"
+
 modulesquery = """
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
@@ -153,15 +152,6 @@ final_dict = (
     systems if systems else modules if modules else components if components else {}
 )
 
-# prettyprint dict
-# for s, ms in final_dict.items():
-#     print(s)
-#     for m, cgs in ms.items():
-#         print(f"|---{m}")
-#         for cg, cs in cgs.items():
-#             print(f"|---|---{cg}")
-#             for c in cs:
-#                 print(f"|---|---|---{c}")
 
 # Define XML structure for the feature model file
 
@@ -172,26 +162,37 @@ for sys_key, sys_values in final_dict.items():
         root = ET.SubElement(struct, "feature", mandatory="true", name=f"{sys_key}")
     else:
         root = ET.SubElement(struct, "and", abstract="true", name=f"{sys_key}")
-    for subs_key, subs_values in sys_values.items():
-        if subs_key in separate_components:
-            system = ET.SubElement(
-                root, "feature", mandatory="true", name=f"{subs_key}"
-            )
-        else:
-            system = ET.SubElement(root, "and", abstract="true", name=f"{subs_key}")
-        for mod_key, mod_values in subs_values.items():
-            if mod_key in separate_components:
-                module = ET.SubElement(
-                    system, "feature", mandatory="true", name=f"{mod_key}"
+    if isinstance(sys_values, dict):
+    # if no system is defined or there are no modules in the system, the components have to be created as leaf feature directly unter the root feature
+        for subs_key, subs_values in sys_values.items():
+            if subs_key in separate_components:
+                system = ET.SubElement(
+                    root, "feature", mandatory="true", name=f"{subs_key}"
                 )
             else:
-                module = ET.SubElement(
-                    system, "and", abstract="true", name=f"{mod_key}"
-                )
-            for comp_value in mod_values:
-                ET.SubElement(module, "feature", mandatory="true", name=f"{comp_value}")
+                system = ET.SubElement(root, "and", abstract="true", name=f"{subs_key}")
+            if isinstance(subs_values, dict):
+            # if there are no components not belonging to a module, the components are provided as list and not as an dict
+                for mod_key, mod_values in subs_values.items():
+                    if mod_key in separate_components:
+                        module = ET.SubElement(
+                            system, "feature", mandatory="true", name=f"{mod_key}"
+                        )
+                    else:
+                        module = ET.SubElement(
+                            system, "and", abstract="true", name=f"{mod_key}"
+                        )
+                    for comp_value in mod_values:
+                        ET.SubElement(module, "feature", mandatory="true", name=f"{comp_value}")
+            else:
+                for comp_value in subs_values:
+                    ET.SubElement(system, "feature", mandatory="true", name=f"{comp_value}")
+    else:
+        for comp_value in sys_values:
+            ET.SubElement(root, "feature", mandatory="true", name=f"{comp_value}")
 
 prettify(fm_xml)
 
 tree = ET.ElementTree(fm_xml)
-tree.write("sample.xml", encoding="UTF-8", xml_declaration=True)
+tree.write("drehtischB.xml", encoding="UTF-8", xml_declaration=True)
+
