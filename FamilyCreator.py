@@ -1,3 +1,4 @@
+from itertools import combinations
 import xml.etree.ElementTree as ET
 from typing import TYPE_CHECKING, Optional
 
@@ -68,6 +69,27 @@ def parse_xml_to_dict(element):
     else:
         raise ValueError("I could not parse xml file and have to return empty-handed!")
 
+def parse_constraints_to_dict(element):
+    excludes = {}
+    implies = {}
+    existing_constraints = {}
+    # get both feature names of the excludes constraint and add them into the eq_dict
+    for rules in element.findall(".//constraints/rule/eq/var"):
+        feature1 = rules.text
+        find = ".//constraints/rule/eq[var='" + feature1 + "']/not/var"
+        for ex in element.findall(find):
+            feature2 = ex.text
+        excludes[feature1] = feature2
+    existing_constraints.update({"eq": excludes})
+    # get both feature names of the implies constraint and add them into the imp_dict
+    for rules in element.findall(".//constraints/rule/imp/var"):
+        feature1 = rules.text
+        find = ".//constraints/rule/eq[var='" + feature1 + "']/not/var"
+        for ex in element.findall(find):
+            feature2 = ex.text
+        implies[feature1] = feature2
+    existing_constraints.update({"imp": implies})
+    return existing_constraints
 
 def get_all_keys(d):
     """extract all existing features and attribute keys"""
@@ -167,9 +189,7 @@ def add_children_to_lowest_available_level(d: dict, f: str, c: dict, a_k: set) -
                 add_children_to_lowest_available_level(d[k]["children"], f, c, a_k)
 
 
-def recursively_merge_children(
-    c1: dict, c2: dict, results: dict, feature_name: str
-) -> None:
+def recursively_merge_children(c1: dict, c2: dict, results: dict, feature_name: str) -> None:
     merged_child_dict = merge_children(c1, c2)
     add_children_to_lowest_available_level(
         results, feature_name, merged_child_dict, get_avail_keys(results, set())
@@ -227,11 +247,39 @@ def merge_children(c1: dict, c2: dict) -> dict:
             pass
     return result_dict
 
-def create_constraints(f1: dict, f2: dict, con: dict) -> dict:
+def create_constraints(f1: dict, f2: dict, f1con: dict, f2con: dict, con: dict) -> dict:
     """get features that only exist in feature model 1 (f1) and features that only exist in feature model 2 (f2)
     if there are no such features no constraints will be added
     if there exists these features, we will create requires or exclude constraints (con) to maintain only the variants that exist at the current state of time
     """
+    def clean_excludes_constraints(fmcon: dict, only_in_fm: list, excludes: dict, con: dict) -> dict:
+        # excludes constraints are extended by excludes constraints from each fm that still are valid
+        for f_ex, ex_f in fmcon["eq"].items():
+            if all(f in only_in_fm for f in [f_ex, ex_f]):
+                excludes[f_ex].append(ex_f)
+        con.update({"eq": {}})
+        return excludes
+        #def clean_excludes_constraints(f1con: dict, f2con: dict, only_in_fm1: list, only_in_fm2: list, excludes: dict, con: dict) -> dict: //so sah der input vorher aus. Sollte ich diesen Abschnitt doch nochbrauchen eventuell eigene Funktion draus machen
+        # # clean exclude dict -> delete all redundant constraints
+        # clean_excludes = {}
+        # pairs = []
+        # for key, value in excludes.items():
+        #     if isinstance(value, list):
+        #         for single_value in value:
+        #             pairs.append((key, single_value))
+        #     else:
+        #         pairs.append((key, value))
+        # unique_pairs = set(tuple(sorted(x)) for x in pairs)
+        # for pair in unique_pairs:
+        #     key = pair[0]
+        #     value = pair[1]
+        #     if key in clean_excludes.keys():
+        #         clean_excludes[key].append(value)
+        #     else:
+        #         clean_excludes.update({key: [value]})
+        #con.update({"eq": clean_excludes})
+        #return excludes
+
     fm1_keys = find_and_filter_all_keys(f1)
     fm2_keys = find_and_filter_all_keys(f2)
     # system/module/component is not included in both fms
@@ -243,16 +291,21 @@ def create_constraints(f1: dict, f2: dict, con: dict) -> dict:
     for y in fm2_keys:
         if y not in fm1_keys:
             diff_comp_in_fm2.append(y)
-    # create constraints so that only the two variants compared can be selected
-    # excludes constraints are created for the features that do not occur in fm 1 -> same is applied to fm 2
-    # requires constraints between the features of fm 1, which do not occur in fm 2 -> same is applied to fm 2
+    # create constraints so that only the two variants compared can be selected + the variants that were already merged
     excludes = {}
     requires = {}
+    # excludes constraints are created for the features that do not occur in fm 1 -> same is applied to fm 2
     for x in range(len(diff_comp_in_fm1)):
-        excludes[diff_comp_in_fm1[x]] = diff_comp_in_fm2
+        excludes[diff_comp_in_fm1[x]] = diff_comp_in_fm2[:]
     for x in range(len(diff_comp_in_fm2)):
-        excludes[diff_comp_in_fm2[x]] = diff_comp_in_fm1
-    con.update({"eq": excludes})
+        excludes[diff_comp_in_fm2[x]] = diff_comp_in_fm1[:]
+    # excludes constraints are extended by excludes constraints from each fm that still are valid
+    if isinstance(f1con,dict):
+        clean_excludes_constraints(f1con, diff_comp_in_fm1, excludes, con)
+    if isinstance(f2con, dict):
+        clean_excludes_constraints(f2con, diff_comp_in_fm2, excludes, con)
+
+    # requires constraints between the features of fm 1, which do not occur in fm 2 -> same is applied to fm 2
     for x in diff_comp_in_fm1:
         required_features = diff_comp_in_fm1.copy()
         required_features.remove(x)
@@ -263,6 +316,23 @@ def create_constraints(f1: dict, f2: dict, con: dict) -> dict:
         required_features.remove(x)
         if required_features:
             requires[x] = required_features
+    # checks if the new requires constraints do not violate any excludes constraints which are added from fm1 and fm2
+    for f_imp, imp_fs in requires.items():
+        for imp_f in imp_fs:
+            if imp_f in excludes[f_imp]:
+                imp_fs.remove(imp_f)
+        # additional check to avoid contradicting constraints so that no configuration can be selected -> If one feature requieres several features it has to be check if these do not exclude each other.
+        if len(imp_fs) > 1:
+            for combination in list(combinations(imp_fs, 2)):
+                feat1 = combination[0]
+                feat2 = combination[1]
+                if feat2 in excludes[feat1]:
+                    requires.update({f_imp: {'disj': imp_fs}})
+                else:
+                    if feat1 in excludes[feat2]:
+                        requires.update({f_imp : {'disj': imp_fs}})
+    # clean requires dict -> delete all features with empty constraints
+    requires = {key: value for key, value in requires.items() if value}
     con.update({"imp": requires})
     return con
 
@@ -297,13 +367,29 @@ def prettify(element, indent="  "):
             element.tail = "\n" + indent * (level - 1)  # for parent close
         queue[0:0] = children  # prepend so children come before siblings
 
+def remove_mandatory(dictionary):
+    iter_dict = dictionary.copy()
+    for key, value in iter_dict.items():
+        if isinstance(value, dict):
+            remove_mandatory(value)
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict):
+                    remove_mandatory(item)
+        if key == 'mandatory' and value == True:
+            del dictionary[key]
+
 def main():
     # Read XML data from file
-    root1, root2 = get_element_trees("drehtischA.xml", "drehtischB.xml")
+    root1, root2 = get_element_trees("FM8TestFiles2.xml", "Cubes3Contacts.xml")
 
     # Iterate through each child element and convert XML to nested dictionary
     fm_dict1 = parse_xml_to_dict(next(iter(root1)))
     fm_dict2 = parse_xml_to_dict(next(iter(root2)))
+
+    # Iterate through all constraints and convert XML to nested dictionary
+    fm_dict1_constraints = parse_constraints_to_dict(root1)
+    fm_dict2_constraints = parse_constraints_to_dict(root2)
 
     # Compare the two dictionaries
     # root feature layer
@@ -311,35 +397,57 @@ def main():
     all_systems = list(set(list(fm_dict1) + list(fm_dict2)))
     attrs1, attrs2 = (get_feature_element(d, "attributes") for d in fm_dicts)
     children1, children2 = (get_feature_element(d, "children") for d in fm_dicts)
-    system = next(iter(fm_dict1))
-    if len(all_systems) == 1:
-        # both feature models have the same root feature name
-        attrs = {"tag": compare_tag_attributes(attrs1, attrs2), "abstract": True}
-    elif len(all_systems) == 2:
-        # the feature models have different root feature names
-        if sorted(children1) == sorted(children2):
-            # case 1: both root features have exactly the same children (on the first child level)
-            # => we assume that the root features are identical, but have different names
-            attrs = {"tag": compare_tag_attributes(attrs1, attrs2), "abstract": True}
+    # SPECIAL CASE!: both fms are disjoint. No features are the same.
+    fs_in_fm1 = set(find_and_filter_all_keys(children1))
+    fs_in_fm2 = set(find_and_filter_all_keys(children2))
+    if fs_in_fm1.isdisjoint(fs_in_fm2):
+        system = next(iter(fm_dict1))
+        if len(all_systems) == 1:
+            # both feature models have the same root feature name
+            attrs_dis = {"tag": 'alt', "abstract": True}
+            attrs = {"tag": 'and', "abstract": True}
+            children = {
+                'fm1': {'attributes': attrs, 'children': children1},
+                'fm2': {'attributes': attrs, 'children': children2}
+            }
+            merged_dict = {system: {'attributes': attrs_dis, 'children': children}}
+            remove_mandatory(merged_dict)
+            #Todo: hier überlegen, wie die constraints übergeben werden müssen
         else:
-            # case 2: both root features have differences in their children (on the first child level)
-            # => we have to check all children independently
-            # ToDo: check the tag for children (and vs or...)
-            attrs = {}
+            print('no solution yet')
+            # if len(all_systems) == 2:
+            #     # the feature models have different root feature names
+            #     #ToDo: hier option einfügen wenn unterschiedliche roots existieren
     else:
-        raise ValueError(
-            f"Cannot merge empty feature model and more than two should not exist, but got {all_systems=}"
-        )
+        system = next(iter(fm_dict1))
+        if len(all_systems) == 1:
+            # both feature models have the same root feature name
+            attrs = {"tag": compare_tag_attributes(attrs1, attrs2), "abstract": True}
+        elif len(all_systems) == 2:
+            # the feature models have different root feature names
+            if sorted(children1) == sorted(children2):
+                # case 1: both root features have exactly the same children (on the first child level)
+                # => we assume that the root features are identical, but have different names
+                attrs = {"tag": compare_tag_attributes(attrs1, attrs2), "abstract": True}
+            else:
+                # case 2: both root features have differences in their children (on the first child level)
+                # => we have to check all children independently
+                # ToDo: check the tag for children (and vs or...)
+                attrs = {}
+        else:
+            raise ValueError(
+             f"Cannot merge empty feature model and more than two should not exist, but got {all_systems=}"
+            )
 
-    # initialize merged_dict with first level (root feature)
-    merged_dict = {system: {"attributes": attrs, "children": {}}}
+        # initialize merged_dict with first level (root feature)
+        merged_dict = {system: {"attributes": attrs, "children": {}}}
 
-    # merge children and add them to merged_dict
-    recursively_merge_children(children1, children2, merged_dict, system)
+        # merge children and add them to merged_dict
+        recursively_merge_children(children1, children2, merged_dict, system)
 
-    # compare fms for distinct features and create requires and excludes constraints
-    constraints_dict = {}
-    create_constraints(fm_dict1, fm_dict2, constraints_dict)
+        # compare fms for distinct features and create requires and excludes constraints
+        constraints_dict = {}
+        create_constraints(fm_dict1, fm_dict2, fm_dict1_constraints, fm_dict2_constraints, constraints_dict)
 
     # define XML structure for the feature model file
     fm_xml = ET.Element("featureModel")
@@ -395,6 +503,15 @@ def main():
                 f1.text = feature_key
                 f2 = ET.SubElement(imp, "var")
                 f2.text = f_value
+        if isinstance(constraints_dict['imp'][feature_key], dict):
+            rule = ET.SubElement(constraints, "rule")
+            imp = ET.SubElement(rule, "imp")
+            f1 = ET.SubElement(imp, "var")
+            f1.text = feature_key
+            or_attribute = ET.SubElement(imp, "disj")
+            for f_value in constraints_dict['imp'][feature_key]['disj']:
+                f2 = ET.SubElement(or_attribute, "var")
+                f2.text = f_value
         else:
             rule = ET.SubElement(constraints, "rule")
             imp = ET.SubElement(rule, "imp")
@@ -406,7 +523,7 @@ def main():
     prettify(fm_xml)
 
     tree = ET.ElementTree(fm_xml)
-    tree.write("FMAB.xml", encoding="UTF-8", xml_declaration=True)
+    tree.write("FM8TestFiles3.xml", encoding="UTF-8", xml_declaration=True)
 
 if __name__ == "__main__":
     main()
