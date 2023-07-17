@@ -1,8 +1,9 @@
 import xml.etree.ElementTree as ET
-from SPARQLWrapper import SPARQLWrapper, JSON, SPARQLWrapper2
 from collections import defaultdict
 
-endpoint_url = "http://localhost:7200/repositories/Drehtisch_B"
+from SPARQLWrapper import JSON, SPARQLWrapper, SPARQLWrapper2
+
+endpoint_url = "http://localhost:7200/repositories/SoftGripper"
 
 modulesquery = """
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -57,11 +58,26 @@ PREFIX vdi2206: <http://www.hsu-ifa.de/ontologies/VDI2206#>
 
 SELECT ?mechatronicsystem ?component ?module
 WHERE {
-    ?component a vdi2206:Component .
-    ?mechatronicsystem a vdi2206:System .
+  ?component a vdi2206:Component .
+  ?mechatronicsystem a vdi2206:System .
+  OPTIONAL {
     ?module a vdi2206:Module .
-    ?mechatronicsystem vdi2206:consistsOf ?component.
-    filter not exists { ?module vdi2206:consistsOf ?component }
+    ?mechatronicsystem vdi2206:consistsOf ?component .
+    FILTER NOT EXISTS { ?module vdi2206:consistsOf ?component }
+  }
+  FILTER(!BOUND(?module) || BOUND(?module) && EXISTS { ?module a vdi2206:Module })
+}
+"""
+systemquery = """
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX vdi2206: <http://www.hsu-ifa.de/ontologies/VDI2206#>
+
+SELECT ?system
+WHERE {
+    ?system a vdi2206:System .
 }
 """
 
@@ -111,9 +127,10 @@ def prettify(element, indent="  "):
 
 # get sparql query results
 component_results = get_sparql_results(endpoint_url, modulesquery)
-system_results = get_sparql_results(endpoint_url, systemsquery)
+systemofsystem_results = get_sparql_results(endpoint_url, systemsquery)
 module_results = get_sparql_results(endpoint_url, sysmoquery)
 components_of_system_results = get_sparql_results(endpoint_url, syscoquery)
+system_results = get_sparql_results(endpoint_url, systemquery)
 
 # fill hierarchic dictionary of sparql query results
 # - get components
@@ -132,11 +149,16 @@ if module_results:
         modules[key].update({value: components.get(value, [])})
 # - get systems
 systems = defaultdict(dict)
-if system_results:
-    for s_result in system_results.bindings:
+if systemofsystem_results:
+    for s_result in systemofsystem_results.bindings:
         key = s_result["mechatronicsystem"].value
         value = s_result["system"].value
         systems[key].update({value: modules.get(value, {})})
+    else:
+        if system_results:
+            for s in system_results.bindings:
+                value = s["system"].value
+                systems.update({value: modules.get(value, {})})
 # - get separate components
 separate_components = defaultdict(list)
 if components_of_system_results:
@@ -163,7 +185,7 @@ for sys_key, sys_values in final_dict.items():
     else:
         root = ET.SubElement(struct, "and", abstract="true", name=f"{sys_key}")
     if isinstance(sys_values, dict):
-    # if no system is defined or there are no modules in the system, the components have to be created as leaf feature directly unter the root feature
+        # if no system is defined or there are no modules in the system, the components have to be created as leaf feature directly unter the root feature
         for subs_key, subs_values in sys_values.items():
             if subs_key in separate_components:
                 system = ET.SubElement(
@@ -172,7 +194,7 @@ for sys_key, sys_values in final_dict.items():
             else:
                 system = ET.SubElement(root, "and", abstract="true", name=f"{subs_key}")
             if isinstance(subs_values, dict):
-            # if there are no components not belonging to a module, the components are provided as list and not as an dict
+                # if there are no components not belonging to a module, the components are provided as list and not as an dict
                 for mod_key, mod_values in subs_values.items():
                     if mod_key in separate_components:
                         module = ET.SubElement(
@@ -183,10 +205,14 @@ for sys_key, sys_values in final_dict.items():
                             system, "and", abstract="true", name=f"{mod_key}"
                         )
                     for comp_value in mod_values:
-                        ET.SubElement(module, "feature", mandatory="true", name=f"{comp_value}")
+                        ET.SubElement(
+                            module, "feature", mandatory="true", name=f"{comp_value}"
+                        )
             else:
                 for comp_value in subs_values:
-                    ET.SubElement(system, "feature", mandatory="true", name=f"{comp_value}")
+                    ET.SubElement(
+                        system, "feature", mandatory="true", name=f"{comp_value}"
+                    )
     else:
         for comp_value in sys_values:
             ET.SubElement(root, "feature", mandatory="true", name=f"{comp_value}")
@@ -194,5 +220,4 @@ for sys_key, sys_values in final_dict.items():
 prettify(fm_xml)
 
 tree = ET.ElementTree(fm_xml)
-tree.write("drehtischB.xml", encoding="UTF-8", xml_declaration=True)
-
+tree.write("F3S60A30R50.xml", encoding="UTF-8", xml_declaration=True)
