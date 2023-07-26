@@ -220,4 +220,4 @@ for sys_key, sys_values in final_dict.items():
 prettify(fm_xml)
 
 tree = ET.ElementTree(fm_xml)
-tree.write("F3S60A30R50.xml", encoding="UTF-8", xml_declaration=True)
+tree.write("F4S60A70D15R50.xml", encoding="UTF-8", xml_declaration=True)
