@@ -61,4 +61,7 @@ def test_family_creator_with_soft_gripper(tmp_path, monkeypatch):
             )
             for k_expected, v_expected in fm_dict_constraints_expected.items():
                 v_test = fm_dict_constraints_test[k_expected]
-                assert sorted(v_expected) == sorted(v_test)
+                try:
+                    assert sorted(v_expected) == sorted(v_test)
+                except AssertionError:
+                    from IPython import embed; embed()
