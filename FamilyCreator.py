@@ -10,8 +10,8 @@ if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 
 
-INPUT_DIR = "./RunningExample/input/"
-OUTPUT_DIR = "./RunningExample/output/"
+INPUT_DIR = "./SoftGripper/input/"
+OUTPUT_DIR = "./SoftGripper/output/"
 
 
 def parse_xml_to_dict(element):
@@ -303,7 +303,7 @@ def create_constraints(
     create_requires_constraints(diff_comp_in_fm1, mandatories, requires)
     create_requires_constraints(diff_comp_in_fm2, mandatories, requires)
     print(f"...done creating requires from diff_comps => {requires=}")
-    _check_violation_of_excludes_cons_by_requires_cons(excludes, requires)
+    #_check_violation_of_excludes_cons_by_requires_cons(excludes, requires)
 
     for fcon in [f1con, f2con]:
         update_dict_with_ancient_knowledge(requires, fcon, "imp")
@@ -316,11 +316,15 @@ def create_constraints(
         # if feature models are disjoint, constraints can not be created between alternative branches
         allowed_constraints = _find_allowed_constraints(f1)
         allowed_constraints.update(_find_allowed_constraints(f2))
-        updated_requires = _update_constraints_for_disjoint_fms(allowed_constraints, requires)
+        updated_requires = _update_constraints_for_disjoint_fms(
+            allowed_constraints, requires
+        )
         con.update({"imp": updated_requires})
         # clean excludes dict -> if fms are disjoint no excludes statements are added, only the exisiting ones for each
         # fm are used, including the constraints for each alternative branch
-        updated_excludes = _update_constraints_for_disjoint_fms(allowed_constraints, existing_excludes)
+        updated_excludes = _update_constraints_for_disjoint_fms(
+            allowed_constraints, existing_excludes
+        )
         con.update({"eq": updated_excludes})
     else:
         # filter requires
@@ -331,10 +335,11 @@ def create_constraints(
         clean_up_requires_according_to_diff_comp(
             diff_comp_in_fm2, requires, updated_requires
         )
+        updated_requires = _drop_duplicate_constraints(updated_requires, "requires")
 
         # filter excludes
-        excludes = clean_up_excludes_according_to_requires(excludes, requires)
-        excludes = _drop_duplicate_excludes(excludes)
+        excludes = clean_up_excludes_according_to_requires(excludes, updated_requires)
+        excludes = _drop_duplicate_constraints(excludes, "excludes")
 
         con.update({"eq": excludes})
         con.update({"imp": updated_requires})
@@ -346,7 +351,7 @@ def clean_up_requires_according_to_diff_comp(
     diff_comp_in_fm, requires, updated_requires
 ):
     for k, v in requires.items():
-        if k in diff_comp_in_fm and any(vv in diff_comp_in_fm for vv in v):
+        if k in diff_comp_in_fm: # and any(vv in diff_comp_in_fm for vv in v):
             # key and at least one value are only in one fm => we want to keep these constraints
             to_add = v  # [vv for vv in v if vv in diff_comp_in_fm]
         elif k not in diff_comp_in_fm and any(vv in diff_comp_in_fm for vv in v):
@@ -445,26 +450,29 @@ def _find_allowed_constraints(f: dict) -> dict:
     return allowed_constraints
 
 
-def _drop_duplicate_excludes(excludes: dict) -> dict:
-    print("...dropping duplicates in excludes")
-    clean_excludes = {}
+def _drop_duplicate_constraints(constraints: dict, con_type: str) -> dict:
+    print(f"...dropping duplicates in {con_type}")
+    clean_constraints = {}
     pairs = []
-    for key, value in excludes.items():
+    for key, value in constraints.items():
         if isinstance(value, list):
             for single_value in value:
                 pairs.append((key, single_value))
         else:
             pairs.append((key, value))
-    unique_pairs = set(tuple(sorted(x)) for x in pairs)
+    if con_type == "excludes":
+        unique_pairs = set(tuple(sorted(x)) for x in pairs)
+    else:
+        unique_pairs = set(pairs)
     for pair in unique_pairs:
         key = pair[0]
         value = pair[1]
-        if key in clean_excludes.keys():
-            clean_excludes[key].append(value)
+        if key in clean_constraints:
+            clean_constraints[key].append(value)
         else:
-            clean_excludes.update({key: [value]})
-    print(f"...done dropping duplicates in excludes => {clean_excludes=}")
-    return clean_excludes
+            clean_constraints.update({key: [value]})
+    print(f"...done dropping duplicates in {con_type} => {clean_constraints=}")
+    return clean_constraints
 
 
 def clean_up_excludes_according_to_requires(excludes, requires):
@@ -479,7 +487,7 @@ def clean_up_excludes_according_to_requires(excludes, requires):
                 ex_vs_of_req_v = excludes[req_v]
                 if ex_vs_of_req_k == ex_vs_of_req_v:
                     # if both lists are equal remove the whole entry of req_k from excludes
-                    updated_excludes.pop(req_k)
+                    updated_excludes.pop(req_k, None)
                     to_remove = [req_k]
                     print(f"...removing keys {', '.join(to_remove)}")
                 elif any(x in ex_vs_of_req_v for x in ex_vs_of_req_k):
@@ -504,13 +512,17 @@ def clean_up_excludes_according_to_requires(excludes, requires):
 
 
 def create_requires_constraints(diff_comp_in_fm, mandatories, requires):
+    # ToDo: requires als Kreis bauen und nicht als Kreuzbedingung
     for x in diff_comp_in_fm:
         required_features = diff_comp_in_fm[:]
         required_features.remove(x)
         required_features = [
             rf
             for rf in required_features
-            if not mandatories.get(x, False) and mandatories.get(rf, False)
+            # allowed condition 1: only optional features are allowed to require mandatory features
+            if (not mandatories.get(x, False) and mandatories.get(rf, False)) or
+            # allowed condition 2: mandatory features can require each other
+            (mandatories.get(x, False) and mandatories.get(rf, False))
         ]
         if required_features:
             requires[x] = required_features
@@ -627,7 +639,8 @@ def create_feature_model_xml(constraints_dict, merged_dict, filename):
             f2 = ET.SubElement(not_feature, "var")
             f2.text = constraints_dict["eq"][feature_key][0]
     for feature_key in constraints_dict["imp"]:
-        if len(constraints_dict["imp"][feature_key]) > 1:
+        # if len(constraints_dict["imp"][feature_key]) > 1:
+        if isinstance(constraints_dict["imp"][feature_key], list):
             for f_value in constraints_dict["imp"][feature_key]:
                 rule = ET.SubElement(constraints, "rule")
                 imp = ET.SubElement(rule, "imp")
@@ -635,7 +648,7 @@ def create_feature_model_xml(constraints_dict, merged_dict, filename):
                 f1.text = feature_key
                 f2 = ET.SubElement(imp, "var")
                 f2.text = f_value
-        if isinstance(constraints_dict["imp"][feature_key], dict):
+        elif isinstance(constraints_dict["imp"][feature_key], dict):
             rule = ET.SubElement(constraints, "rule")
             imp = ET.SubElement(rule, "imp")
             f1 = ET.SubElement(imp, "var")
@@ -645,12 +658,16 @@ def create_feature_model_xml(constraints_dict, merged_dict, filename):
                 f2 = ET.SubElement(or_attribute, "var")
                 f2.text = f_value
         else:
-            rule = ET.SubElement(constraints, "rule")
-            imp = ET.SubElement(rule, "imp")
-            f1 = ET.SubElement(imp, "var")
-            f1.text = feature_key
-            f2 = ET.SubElement(imp, "var")
-            f2.text = constraints_dict["imp"][feature_key][0]
+            raise TypeError(
+                f"this type is not yet implemented, please check for errors in constraints dict: "
+                f"{type(constraints_dict['imp'][feature_key])}"
+            )
+            # rule = ET.SubElement(constraints, "rule")
+            # imp = ET.SubElement(rule, "imp")
+            # f1 = ET.SubElement(imp, "var")
+            # f1.text = feature_key
+            # f2 = ET.SubElement(imp, "var")
+            # f2.text = constraints_dict["imp"][feature_key][0]
     prettify_xml(fm_xml)
     tree = ET.ElementTree(fm_xml)
     tree.write(filename, encoding="UTF-8", xml_declaration=True)
@@ -676,8 +693,8 @@ def main():
         output_filename = f"{output_dir}SoftGripper{idx_f+1}.xml"
 
         # breakpoint
-        # if output_filename.endswith("3.xml"):
-        #     print("break")
+        if output_filename.endswith("6.xml"):
+            print("break")
 
         print("#######################################")
         print(f"Merging {filename1=} and {filename2=}")
@@ -923,7 +940,8 @@ def main():
                     for c in list(combinations(v["disj"], 2)):
                         combis[c[0]] = [c[1]]
                         combis[c[1]] = [c[0]]
-        print("...creating combis")
+        if combis:
+            print("...done creating combis")
 
         # update constraints
         print("...updating constraints")
