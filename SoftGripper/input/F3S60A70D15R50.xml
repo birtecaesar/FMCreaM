@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<featureModel>
+  <struct>
+    <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#root">
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#FingerSeal_3" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#AllenKeyBolt_M5_2" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#AllenKeyBolt_M3_2" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#FingerSeal_2" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#IntegralThread_M5_1" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#O-Ring_M3_3" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Bolt_M5_2" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#IntegralThread_M5_3" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Finger_1" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#AllenKeyBolt_M5_1" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#FingerSeal_1" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#FingerFixation_2" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Finger_3" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#IntegralThread_M5_2" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#FingerFixation_1" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#AllenKeyBolt_M3_1" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#O-Ring_M5_2" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#EndeffektorPneumaticHoseAttachment_M5_2" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#O-Ring_M28" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#O-Ring_M5_1" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Finger_2" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#FingerFixation_3" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#AllenKeyBolt_M3_3" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#O-Ring_M3_2" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#EndeffektorPneumaticHoseAttachment_M5_1" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Bolt_M5_1" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#O-Ring_M3_1" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#EndeffektorMount_R50" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#GripperFingerMount_F3_A70" />
+    </and>
+  </struct>
+</featureModel>
