@@ -1,11 +1,11 @@
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as eT
 from collections import defaultdict
 
 from SPARQLWrapper import JSON, SPARQLWrapper, SPARQLWrapper2
 
-endpoint_url = "http://localhost:7200/repositories/SoftGripper"
+ENDPOINT_URL = "http://localhost:7200/repositories/SoftGripper"
 
-modulesquery = """
+MODULESQUERY = """
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -19,7 +19,7 @@ WHERE {
     ?module vdi2206:consistsOf ?component.
 }"""
 
-systemsquery = """
+SYSTEMSQUERY = """
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -34,7 +34,7 @@ WHERE {
 }
 """
 
-sysmoquery = """
+SYSMOQUERY = """
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -49,7 +49,7 @@ WHERE {
 }
 """
 
-syscoquery = """
+SYSCOQUERY = """
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -68,7 +68,7 @@ WHERE {
   FILTER(!BOUND(?module) || BOUND(?module) && EXISTS { ?module a vdi2206:Module })
 }
 """
-systemquery = """
+SYSTEMQUERY = """
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -111,7 +111,7 @@ def add_to_lowest_layer(child, parents, query_dict):
     return
 
 
-def prettify(element, indent="  "):
+def prettify_xml(element, indent="  "):
     queue = [(0, element)]  # (level, element)
     while queue:
         level, element = queue.pop(0)
@@ -125,99 +125,130 @@ def prettify(element, indent="  "):
         queue[0:0] = children  # prepend so children come before siblings
 
 
-# get sparql query results
-component_results = get_sparql_results(endpoint_url, modulesquery)
-systemofsystem_results = get_sparql_results(endpoint_url, systemsquery)
-module_results = get_sparql_results(endpoint_url, sysmoquery)
-components_of_system_results = get_sparql_results(endpoint_url, syscoquery)
-system_results = get_sparql_results(endpoint_url, systemquery)
+def main(filename: str) -> None:
+    # get sparql query results
+    component_results = get_sparql_results(ENDPOINT_URL, MODULESQUERY)
+    systemofsystem_results = get_sparql_results(ENDPOINT_URL, SYSTEMQUERY)
+    module_results = get_sparql_results(ENDPOINT_URL, SYSMOQUERY)
+    components_of_system_results = get_sparql_results(ENDPOINT_URL, SYSCOQUERY)
+    system_results = get_sparql_results(ENDPOINT_URL, SYSTEMQUERY)
 
-# fill hierarchic dictionary of sparql query results
-# - get components
-components = defaultdict(list)
-if component_results:
-    for c_result in component_results.bindings:
-        key = c_result["module"].value
-        value = c_result["component"].value
-        components[key].append(value)
-# - get modules
-modules = defaultdict(dict)
-if module_results:
-    for m_result in module_results.bindings:
-        key = m_result["mechatronicsystem"].value
-        value = m_result["module"].value
-        modules[key].update({value: components.get(value, [])})
-# - get systems
-systems = defaultdict(dict)
-if systemofsystem_results:
-    for s_result in systemofsystem_results.bindings:
-        key = s_result["mechatronicsystem"].value
-        value = s_result["system"].value
-        systems[key].update({value: modules.get(value, {})})
-    else:
-        if system_results:
-            for s in system_results.bindings:
-                value = s["system"].value
-                systems.update({value: modules.get(value, {})})
-# - get separate components
-separate_components = defaultdict(list)
-if components_of_system_results:
-    for sc_result in components_of_system_results.bindings:
-        key = sc_result["component"].value
-        value = sc_result["mechatronicsystem"].value
-        separate_components[key].append(value)
-    for component, parents in separate_components.items():
-        add_to_lowest_layer(component, parents, systems)
+    # fill hierarchic dictionary of sparql query results
+    components = create_components(component_results)
+    modules = create_modules(components, module_results)
+    systems = create_systems(modules, system_results, systemofsystem_results)
+    separate_components = get_separate_components(components_of_system_results, systems)
+    # use the highest available layer as final dict
+    final_dict = (
+        systems if systems else modules if modules else components if components else {}
+    )
 
-# use the highest available layer as final dict
-final_dict = (
-    systems if systems else modules if modules else components if components else {}
-)
+    # Define xml structure for the feature model file
+    fm_xml = setup_xml_structure(final_dict, separate_components)
+    prettify_xml(fm_xml)
+
+    # write xml tree to file
+    tree = eT.ElementTree(fm_xml)
+    tree.write(filename, encoding="UTF-8", xml_declaration=True)
 
 
-# Define XML structure for the feature model file
-
-fm_xml = ET.Element("featureModel")
-struct = ET.SubElement(fm_xml, "struct")
-for sys_key, sys_values in final_dict.items():
-    if sys_key in separate_components:
-        root = ET.SubElement(struct, "feature", mandatory="true", name=f"{sys_key}")
-    else:
-        root = ET.SubElement(struct, "and", abstract="true", name=f"{sys_key}")
-    if isinstance(sys_values, dict):
-        # if no system is defined or there are no modules in the system, the components have to be created as leaf feature directly unter the root feature
-        for subs_key, subs_values in sys_values.items():
-            if subs_key in separate_components:
-                system = ET.SubElement(
-                    root, "feature", mandatory="true", name=f"{subs_key}"
-                )
-            else:
-                system = ET.SubElement(root, "and", abstract="true", name=f"{subs_key}")
-            if isinstance(subs_values, dict):
-                # if there are no components not belonging to a module, the components are provided as list and not as an dict
-                for mod_key, mod_values in subs_values.items():
-                    if mod_key in separate_components:
-                        module = ET.SubElement(
-                            system, "feature", mandatory="true", name=f"{mod_key}"
-                        )
-                    else:
-                        module = ET.SubElement(
-                            system, "and", abstract="true", name=f"{mod_key}"
-                        )
-                    for comp_value in mod_values:
-                        ET.SubElement(
-                            module, "feature", mandatory="true", name=f"{comp_value}"
-                        )
-            else:
-                for comp_value in subs_values:
-                    ET.SubElement(
-                        system, "feature", mandatory="true", name=f"{comp_value}"
+def setup_xml_structure(final_dict, separate_components):
+    fm_xml = eT.Element("featureModel")
+    struct = eT.SubElement(fm_xml, "struct")
+    for sys_key, sys_values in final_dict.items():
+        if sys_key in separate_components:
+            root = eT.SubElement(struct, "feature", mandatory="true", name=f"{sys_key}")
+        else:
+            root = eT.SubElement(struct, "and", abstract="true", name=f"{sys_key}")
+        if isinstance(sys_values, dict):
+            # if no system is defined or there are no modules in the system, the components have to be created as leaf
+            # feature directly unter the root feature
+            for subs_key, subs_values in sys_values.items():
+                if subs_key in separate_components:
+                    system = eT.SubElement(
+                        root, "feature", mandatory="true", name=f"{subs_key}"
                     )
-    else:
-        for comp_value in sys_values:
-            ET.SubElement(root, "feature", mandatory="true", name=f"{comp_value}")
+                else:
+                    system = eT.SubElement(
+                        root, "and", abstract="true", name=f"{subs_key}"
+                    )
+                if isinstance(subs_values, dict):
+                    # if there are no components not belonging to a module, the components are provided as list and not
+                    # as a dict
+                    for mod_key, mod_values in subs_values.items():
+                        if mod_key in separate_components:
+                            module = eT.SubElement(
+                                system, "feature", mandatory="true", name=f"{mod_key}"
+                            )
+                        else:
+                            module = eT.SubElement(
+                                system, "and", abstract="true", name=f"{mod_key}"
+                            )
+                        for comp_value in mod_values:
+                            eT.SubElement(
+                                module,
+                                "feature",
+                                mandatory="true",
+                                name=f"{comp_value}",
+                            )
+                else:
+                    for comp_value in subs_values:
+                        eT.SubElement(
+                            system, "feature", mandatory="true", name=f"{comp_value}"
+                        )
+        else:
+            for comp_value in sys_values:
+                eT.SubElement(root, "feature", mandatory="true", name=f"{comp_value}")
+    return fm_xml
 
-prettify(fm_xml)
 
-tree = ET.ElementTree(fm_xml)
-tree.write("F4S60A70D15R50.xml", encoding="UTF-8", xml_declaration=True)
+def get_separate_components(components_of_system_results, systems):
+    separate_components = defaultdict(list)
+    if components_of_system_results:
+        for sc_result in components_of_system_results.bindings:
+            key = sc_result["component"].value
+            value = sc_result["mechatronicsystem"].value
+            separate_components[key].append(value)
+        for component, parents in separate_components.items():
+            add_to_lowest_layer(component, parents, systems)
+    return separate_components
+
+
+def create_systems(modules, system_results, systemofsystem_results):
+    systems = defaultdict(dict)
+    if systemofsystem_results:
+        for s_result in systemofsystem_results.bindings:
+            key = s_result["mechatronicsystem"].value
+            value = s_result["system"].value
+            systems[key].update({value: modules.get(value, {})})
+        else:
+            if system_results:
+                for s in system_results.bindings:
+                    value = s["system"].value
+                    systems.update({value: modules.get(value, {})})
+    return systems
+
+
+def create_modules(components, module_results):
+    modules = defaultdict(dict)
+    if module_results:
+        for m_result in module_results.bindings:
+            key = m_result["mechatronicsystem"].value
+            value = m_result["module"].value
+            modules[key].update({value: components.get(value, [])})
+    return modules
+
+
+def create_components(component_results):
+    components = defaultdict(list)
+    if component_results:
+        for c_result in component_results.bindings:
+            key = c_result["module"].value
+            value = c_result["component"].value
+            components[key].append(value)
+    return components
+
+
+if __name__ == "__main__":
+    filename = "F4S60A70D15R50.xml"
+    main(filename)

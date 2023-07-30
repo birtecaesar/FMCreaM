@@ -38,20 +38,20 @@
   </struct>
   <constraints>
     <rule>
-      <eq>
+      <imp>
         <var>http://www.hsu-ifa.de/ontologies/VDI2206#GripperFingerMount_F3_A30</var>
         <not>
           <var>http://www.hsu-ifa.de/ontologies/VDI2206#GripperFingerMount_F3_A70</var>
     </not>
-    </eq>
+    </imp>
     </rule>
     <rule>
-      <eq>
+      <imp>
         <var>http://www.hsu-ifa.de/ontologies/VDI2206#EndeffektorMount_R31</var>
         <not>
           <var>http://www.hsu-ifa.de/ontologies/VDI2206#EndeffektorMount_R50</var>
     </not>
-    </eq>
+    </imp>
     </rule>
     <rule>
       <imp>
@@ -70,12 +70,6 @@
         <var>http://www.hsu-ifa.de/ontologies/VDI2206#EndeffektorMount_R38</var>
         <var>http://www.hsu-ifa.de/ontologies/VDI2206#EndeffektorMount_R31</var>
     </imp>
-    </rule>
-    <rule>
-      <imp>
-        <var>http://www.hsu-ifa.de/ontologies/VDI2206#EndeffektorMount_R38</var>
-        <var>http://www.hsu-ifa.de/ontologies/VDI2206#GripperFingerMount_F3_A30</var>
-      </imp>
     </rule>
   </constraints>
 </featureModel>

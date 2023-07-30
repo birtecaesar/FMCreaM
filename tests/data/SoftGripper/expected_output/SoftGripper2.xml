@@ -37,12 +37,12 @@
   </struct>
   <constraints>
     <rule>
-      <eq>
+      <imp>
         <var>http://www.hsu-ifa.de/ontologies/VDI2206#EndeffektorMount_R31</var>
         <not>
           <var>http://www.hsu-ifa.de/ontologies/VDI2206#EndeffektorMount_R50</var>
     </not>
-    </eq>
+    </imp>
     </rule>
     <rule>
       <imp>

@@ -33,10 +33,10 @@ def test_family_creator_with_soft_gripper(tmp_path, monkeypatch):
 
     for f_expected, f_test in zip(expected_files, test_files):
         # get trees
-        root_expected = mut.get_element_tree(
-            f"tests/data/SoftGripper/expected_output/{f_expected}"
-        )
-        root_test = mut.get_element_tree(f"{filepath_test_dir.as_posix()}/{f_test}")
+        fp_expected = f"tests/data/SoftGripper/expected_output/{f_expected}"
+        fp_test = f"{filepath_test_dir.as_posix()}/{f_test}"
+        root_expected = mut.get_element_tree(fp_expected)
+        root_test = mut.get_element_tree(fp_test)
 
         # parse xml to dict
         fm_dict_expected = mut.parse_xml_to_dict(next(iter(root_expected)))
@@ -51,17 +51,16 @@ def test_family_creator_with_soft_gripper(tmp_path, monkeypatch):
             assert_dict_equality(v_expected, v_test)
 
         # parse constraints from xml to dict
-        fm_dict_constraints_expected = mut.parse_constraints_to_dict(root_expected)
-        fm_dict_constraints_test = mut.parse_constraints_to_dict(root_test)
+        fm_dict_constraints_expected = mut.parse_constraints_to_dict(fp_expected)
+        fm_dict_constraints_test = mut.parse_constraints_to_dict(fp_test)
 
         # assert equality of constraints
         for constraint in ["eq", "imp"]:
             assert sorted(fm_dict_constraints_expected.get(constraint, {})) == sorted(
                 fm_dict_constraints_test.get(constraint, {})
             )
-            for k_expected, v_expected in fm_dict_constraints_expected.items():
-                v_test = fm_dict_constraints_test[k_expected]
-                try:
-                    assert sorted(v_expected) == sorted(v_test)
-                except AssertionError:
-                    from IPython import embed; embed()
+            for k_expected, v_expected in fm_dict_constraints_expected.get(
+                constraint, {}
+            ).items():
+                v_test = fm_dict_constraints_test.get(constraint, {})[k_expected]
+                assert sorted(v_expected) == sorted(v_test)
