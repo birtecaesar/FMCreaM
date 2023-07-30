@@ -384,7 +384,8 @@ def create_constraints(
     mandatories = {}
     for f in [f1, f2]:
         f_root = f[next(iter(f))]
-        get_mandatories(diff_comp_in_fm1, diff_comp_in_fm2, f_root, mandatories)
+        combined_diff_comp = diff_comp_in_fm1 + diff_comp_in_fm2
+        get_mandatories(combined_diff_comp, f_root, mandatories)
     print(f"...done creating {mandatories=}")
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -407,13 +408,19 @@ def create_constraints(
     if breakpoint:
         print("breakpoint")
 
-    # --- filter requires ----------------------------------------------------------------------------------------------
-    combined_diff_comp = diff_comp_in_fm1 + diff_comp_in_fm2
-    requires = clean_up_requires_according_to_diff_comp(combined_diff_comp, requires)
+    # --- postprocess requires -----------------------------------------------------------------------------------------
+    require_chain = get_require_chain(requires)
+    update_requires_according_to_mandatory_attributes(
+        diff_comp_in_fm2, f1, f_root, fm1_keys, fm2_keys, require_chain, requires
+    )
+    requires = clean_up_requires_according_to_diff_comp(
+        diff_comp_in_fm1 + diff_comp_in_fm2, requires
+    )
     requires = _drop_duplicate_constraints(requires, "requires")
+    requires = repair_potentially_broken_requirement_chain(require_chain, requires)
     # ------------------------------------------------------------------------------------------------------------------
 
-    # --- filter excludes ----------------------------------------------------------------------------------------------
+    # --- postprocess excludes -----------------------------------------------------------------------------------------
     excludes = clean_up_excludes_according_to_requires(excludes, requires)
     excludes = _drop_duplicate_constraints(excludes, "excludes")
     excludes = clean_up_excludes_according_to_mandatory_chain(excludes, mandatory_chain)
@@ -431,6 +438,96 @@ def create_constraints(
     return con
 
 
+def update_requires_according_to_mandatory_attributes(
+    diff_comp_in_fm2, f1, f_root, fm1_keys, fm2_keys, require_chain, requires
+):
+    """if unique features exist in fm2 and optional features of fm1 exist as mandatory features in fm2, we want to
+    create a requires constraint between the unique features and the optional features"""
+    if require_chain:
+        mandatories_of_fm2 = {}
+        get_mandatories(fm2_keys, f_root, mandatories_of_fm2)
+        optionals_of_fm1 = {}
+        get_optionals(fm1_keys, f1[next(iter(f1))], optionals_of_fm1)
+        fm_intersection = sorted(
+            set(optionals_of_fm1).intersection(set(mandatories_of_fm2))
+        )
+        single_requires = sorted(set(fm_intersection).difference(set(require_chain)))
+        if single_requires:
+            for d in diff_comp_in_fm2:
+                if d in requires:
+                    requires[d] += single_requires
+                else:
+                    requires[d] = single_requires
+        chain_requires = sorted(set(fm_intersection).intersection(set(require_chain)))
+        if chain_requires:
+            for d in diff_comp_in_fm2:
+                if d in requires:
+                    requires[d] += [chain_requires[0]]
+                else:
+                    requires[d] = [chain_requires[0]]
+
+
+def repair_potentially_broken_requirement_chain(require_chain, requires):
+    """after clean up of requires the requirement chain could be broken. if so, we have to repair it and connect all
+    its elements again, leaving out elements that weren't originally part of this chain.
+    the feature that was correctly removed during clean up is not part of the repaired_requirement_chain anymore."""
+    if not require_chain:
+        # only check for potential repair if any require_chain is available
+        return requires
+
+    # determine features that are in or are not in require_chain
+    # the latter will not be touched and added to the resulting repaired_require_chain, thus forming a fixed version
+    # of requires
+    repaired_require_chain = {}
+    # require_chain_keys = [rk for r in require_chain for rk in r]
+
+    features_not_in_require_chain = {
+        k: v for k, v in requires.items() if k not in require_chain
+    }
+    features_in_require_chain = {
+        k: v for k, v in requires.items() if k in require_chain
+    }
+
+    # check if the require_chain is broken
+    broken = False
+    for v in features_in_require_chain.values():
+        for vv in v:
+            if vv not in requires:
+                broken = True
+    if not broken:
+        # no update of requires necessary if chain is not broken
+        return requires
+
+    # determine broken elements and find the corresponding values in the original require_chain
+    broken_elements = set(require_chain).difference(set(requires))
+    values_of_broken_elements = [xx for x in broken_elements for xx in require_chain[x]]
+    chain_to_repair = sorted(
+        {x for x in require_chain if x not in values_of_broken_elements}
+    )
+
+    # repair require chain (analogous to creating the require_chain in the first place)
+    for i_md, md in enumerate(chain_to_repair, 1):
+        if i_md == len(chain_to_repair):
+            # close circle by adding first element as requiree to last element (requirer)
+            i_md = 0
+        requirer = md
+        requiree = chain_to_repair[i_md]
+        if requiree:
+            repaired_require_chain.update({requirer: [requiree]})
+
+    # add all requirements that were not part of the require_chain
+    repaired_require_chain.update(features_not_in_require_chain)
+
+    # add all requirements that were part of the require_chain, but are now only single requirements
+    for x in values_of_broken_elements:
+        v = requires[x]
+        if x in repaired_require_chain:
+            repaired_require_chain[x] += v
+        else:
+            repaired_require_chain[x] = v
+    return repaired_require_chain
+
+
 def create_diff_comps(fm1_keys, fm2_keys):
     """determine unique features of fm1 and fm2"""
     diff_comp_in_fm1 = [x for x in fm1_keys if x not in fm2_keys]
@@ -442,7 +539,7 @@ def create_excludes_constraints(diff_comp_in_fm1, diff_comp_in_fm2):
     """assign all features of fm2 to each feature of fm1 and vice versa"""
     excludes = {diff: diff_comp_in_fm2.copy() for diff in diff_comp_in_fm1}
     excludes.update({diff: diff_comp_in_fm1.copy() for diff in diff_comp_in_fm2})
-    return excludes
+    return {k: v for k, v in excludes.items() if len(v)}
 
 
 def clean_up_requires_according_to_diff_comp(full_diff_comp, requires):
@@ -608,17 +705,47 @@ def create_requires_constraints(
     return requires
 
 
-def get_mandatories(diff_comp_in_fm1, diff_comp_in_fm2, f, mandatories):
+def get_mandatories(feature_list, f, mandatories):
     if f.get("children", {}):
         for child_name, child_values in f["children"].items():
-            if any(child_name in diff for diff in [diff_comp_in_fm1, diff_comp_in_fm2]):
+            if (
+                child_name in feature_list
+            ):  # (child_name in diff for diff in search_dict):
                 mandatories.update(
                     {child_name: child_values["attributes"].get("mandatory", False)}
                 )
-            get_mandatories(
-                diff_comp_in_fm1, diff_comp_in_fm2, child_values, mandatories
-            )
+            get_mandatories(feature_list, child_values, mandatories)
     return
+
+
+def get_optionals(feature_list, f, optionals):
+    if f.get("children", {}):
+        for child_name, child_values in f["children"].items():
+            if (
+                child_name in feature_list
+            ):  # (child_name in diff for diff in search_dict):
+                mandatory_attr = child_values["attributes"].get("mandatory", False)
+                if not mandatory_attr:
+                    optionals.update({child_name: mandatory_attr})
+            get_mandatories(feature_list, child_values, optionals)
+    return
+
+
+def get_require_chain(requires):
+    """get all elements that require each other in a chain for further postprocessing of requirements"""
+    # DISCLAIMER: currently, this function only produces one chain. single connections are correctly sorted out, but if
+    # there are two disjoint require_chains, we would combine them in this function. further work is necessary to
+    # prevent this behaviour
+    all_values = {vv for v in requires.values() for vv in v}
+    require_chain = {}
+    for k, v in requires.items():
+        other_keys = [r for r in requires if r != k]
+        if any(vv in other_keys for vv in v) and k in all_values:
+            if k in require_chain:
+                require_chain[k] += v
+            else:
+                require_chain[k] = v
+    return require_chain
 
 
 def prettify_xml(element, indent="  "):
@@ -736,7 +863,7 @@ def main():
 
         # set breakpoint for debugging to a certain output_file
         breakpoint = False
-        if output_filename.endswith("7.xml"):
+        if output_filename.endswith("10.xml"):
             breakpoint = True
 
         print("############################################################")
