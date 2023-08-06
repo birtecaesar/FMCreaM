@@ -8,8 +8,9 @@ if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 
 
-INPUT_DIR = "./SoftGripper/input/"
-OUTPUT_DIR = "./SoftGripper/output/"
+FEATURE_MODEL_GROUP = "TuggerTrain"
+INPUT_DIR = f"./{FEATURE_MODEL_GROUP}/input/"
+OUTPUT_DIR = f"./{FEATURE_MODEL_GROUP}/output/"
 
 
 def get_element_tree(file: str) -> "Element":
@@ -417,13 +418,18 @@ def create_constraints(
         diff_comp_in_fm1 + diff_comp_in_fm2, requires
     )
     requires = _drop_duplicate_constraints(requires, "requires")
-    requires = repair_potentially_broken_requirement_chain(require_chain, requires)
+    requires = repair_potentially_broken_requirement_chain(
+        require_chain, requires, fm1_keys, fm2_keys
+    )
     # ------------------------------------------------------------------------------------------------------------------
 
     # --- postprocess excludes -----------------------------------------------------------------------------------------
     excludes = clean_up_excludes_according_to_requires(excludes, requires)
     excludes = _drop_duplicate_constraints(excludes, "excludes")
-    excludes = clean_up_excludes_according_to_mandatory_chain(excludes, mandatory_chain)
+    if not all(diff_comp for diff_comp in [diff_comp_in_fm1, diff_comp_in_fm2]):
+        excludes = clean_up_excludes_according_to_mandatory_chain(
+            excludes, mandatory_chain
+        )
     excludes = clean_up_excludes_according_to_features_in_fm2(excludes, f2)
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -467,7 +473,9 @@ def update_requires_according_to_mandatory_attributes(
                     requires[d] = [chain_requires[0]]
 
 
-def repair_potentially_broken_requirement_chain(require_chain, requires):
+def repair_potentially_broken_requirement_chain(
+    require_chain, requires, fm1_keys, fm2_keys
+):
     """after clean up of requires the requirement chain could be broken. if so, we have to repair it and connect all
     its elements again, leaving out elements that weren't originally part of this chain.
     the feature that was correctly removed during clean up is not part of the repaired_requirement_chain anymore."""
@@ -480,52 +488,71 @@ def repair_potentially_broken_requirement_chain(require_chain, requires):
     # of requires
     repaired_require_chain = {}
     # require_chain_keys = [rk for r in require_chain for rk in r]
+    broken = {0: False, 1: False}
+    for idx_fm, fm_keys in enumerate([fm1_keys, fm2_keys]):
+        features_not_in_require_chain = {
+            k: v for k, v in requires.items() if k in fm_keys and k not in require_chain
+        }
+        features_in_require_chain = {
+            k: v for k, v in requires.items() if k in fm_keys and k in require_chain
+        }
 
-    features_not_in_require_chain = {
-        k: v for k, v in requires.items() if k not in require_chain
-    }
-    features_in_require_chain = {
-        k: v for k, v in requires.items() if k in require_chain
-    }
+        # check if the require_chain is broken
+        fm_broken = False
+        for v in features_in_require_chain.values():
+            for vv in v:
+                if vv not in requires:
+                    fm_broken = True
+                    broken[idx_fm] = True
+        if not fm_broken:
+            # no update of requires necessary if chain is not broken
+            repaired_require_chain.update(features_in_require_chain)
+            repaired_require_chain.update(features_not_in_require_chain)
+            continue  # with next fm
 
-    # check if the require_chain is broken
-    broken = False
-    for v in features_in_require_chain.values():
-        for vv in v:
-            if vv not in requires:
-                broken = True
-    if not broken:
-        # no update of requires necessary if chain is not broken
+        # determine broken elements and find the corresponding values in the original require_chain
+        broken_elements = set(require_chain).difference(set(requires))
+        values_of_broken_elements = [
+            xx for x in broken_elements for xx in require_chain[x]
+        ]
+        chain_to_repair = sorted(
+            {
+                x
+                for x in require_chain
+                if x not in values_of_broken_elements and x in fm_keys
+            }
+        )
+
+        # repair require chain (analogous to creating the require_chain in the first place)
+        for i_md, md in enumerate(chain_to_repair, 1):
+            if i_md == len(chain_to_repair):
+                # close circle by adding first element as requiree to last element (requirer)
+                i_md = 0
+            requirer = md
+            requiree = chain_to_repair[i_md]
+            if requiree:
+                repaired_require_chain.update({requirer: [requiree]})
+
+        # add all requirements that were not part of the require_chain
+        repaired_require_chain.update(features_not_in_require_chain)
+
+        # add all requirements that were part of the require_chain, but are now only single requirements
+        for x in values_of_broken_elements:
+            v = requires[x]
+            if x in repaired_require_chain:
+                repaired_require_chain[x] += v
+            else:
+                repaired_require_chain[x] = v
+    if not any(v for v in broken.values()):
+        # if no broken chains detected for both fms, return the original requires dict
         return requires
-
-    # determine broken elements and find the corresponding values in the original require_chain
-    broken_elements = set(require_chain).difference(set(requires))
-    values_of_broken_elements = [xx for x in broken_elements for xx in require_chain[x]]
-    chain_to_repair = sorted(
-        {x for x in require_chain if x not in values_of_broken_elements}
-    )
-
-    # repair require chain (analogous to creating the require_chain in the first place)
-    for i_md, md in enumerate(chain_to_repair, 1):
-        if i_md == len(chain_to_repair):
-            # close circle by adding first element as requiree to last element (requirer)
-            i_md = 0
-        requirer = md
-        requiree = chain_to_repair[i_md]
-        if requiree:
-            repaired_require_chain.update({requirer: [requiree]})
-
-    # add all requirements that were not part of the require_chain
-    repaired_require_chain.update(features_not_in_require_chain)
-
-    # add all requirements that were part of the require_chain, but are now only single requirements
-    for x in values_of_broken_elements:
-        v = requires[x]
-        if x in repaired_require_chain:
-            repaired_require_chain[x] += v
-        else:
-            repaired_require_chain[x] = v
-    return repaired_require_chain
+    else:
+        # if any broken chain detected for both fms, return the repaired requires dict
+        # remove duplicates (these can occur, if they are added by both fms)
+        repaired_require_chain = {
+            k: sorted(set(v)) for k, v in repaired_require_chain.items()
+        }
+        return repaired_require_chain
 
 
 def create_diff_comps(fm1_keys, fm2_keys):
@@ -619,9 +646,13 @@ def clean_up_excludes_according_to_requires(excludes, requires):
                     # if any entry of the lists is equal, remove this entry from the values of excludes
                     duplicates = {x for x in ex_vs_of_req_k if x in ex_vs_of_req_v}
                     to_remove = [x for x in updated_excludes[req_k] if x in duplicates]
-                    updated_excludes[req_k] = [
+                    filtered_list = [
                         x for x in updated_excludes[req_k] if x not in duplicates
                     ]
+                    if filtered_list:
+                        updated_excludes[req_k] = filtered_list[:]
+                    else:
+                        updated_excludes.pop(req_k)
                     print(f"...removing values {', '.join(to_remove)}")
                 if to_remove:
                     # if we removed a key or a value previously, we also want to update the remaining counter-part
@@ -727,7 +758,7 @@ def get_optionals(feature_list, f, optionals):
                 mandatory_attr = child_values["attributes"].get("mandatory", False)
                 if not mandatory_attr:
                     optionals.update({child_name: mandatory_attr})
-            get_mandatories(feature_list, child_values, optionals)
+            get_optionals(feature_list, child_values, optionals)
     return
 
 
@@ -859,11 +890,12 @@ def main():
         else:
             filename1 = output_files[-1]
             filename2 = f"{input_dir}{file2}"
-        output_filename = f"{output_dir}SoftGripper{idx_f+1}.xml"
+        # output_filename = f"{output_dir}SoftGripper{idx_f+1}.xml"
+        output_filename = f"{output_dir}{FEATURE_MODEL_GROUP}{idx_f+1}.xml"
 
         # set breakpoint for debugging to a certain output_file
         breakpoint = False
-        if output_filename.endswith("10.xml"):
+        if output_filename.endswith("2.xml"):
             breakpoint = True
 
         print("############################################################")

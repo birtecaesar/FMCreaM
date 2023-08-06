@@ -1,5 +1,7 @@
 import os
 
+import pytest
+
 import FamilyCreator as mut
 
 
@@ -11,21 +13,23 @@ def assert_dict_equality(v_expected, v_test):
     assert_dict_equality(v_expected["children"], v_test["children"])
 
 
-def test_family_creator_with_soft_gripper(tmp_path, monkeypatch):
+@pytest.mark.parametrize("fm_group", ["SoftGripper", "TuggerTrain"])
+def test_family_creator_with_soft_gripper(fm_group, tmp_path, monkeypatch):
 
     # set up temp dir for test output
     filepath_test_dir = tmp_path / "test_output/"
     filepath_test_dir.mkdir()
 
     # monkeypatch input and output filepaths
-    monkeypatch.setattr(mut, "INPUT_DIR", "tests/data/SoftGripper/input/")
+    monkeypatch.setattr(mut, "FEATURE_MODEL_GROUP", f"{fm_group}")
+    monkeypatch.setattr(mut, "INPUT_DIR", f"tests/data/{fm_group}/input/")
     monkeypatch.setattr(mut, "OUTPUT_DIR", f"{filepath_test_dir.as_posix()}/")
 
     # call FamilyCreator.main()
     mut.main()
 
     # assert all output files are as expected
-    expected_files = sorted(os.listdir("tests/data/SoftGripper/expected_output/"))
+    expected_files = sorted(os.listdir(f"tests/data/{fm_group}/expected_output/"))
     test_files = [
         f for f in sorted(os.listdir(filepath_test_dir)) if str(f).endswith("xml")
     ]
@@ -33,7 +37,7 @@ def test_family_creator_with_soft_gripper(tmp_path, monkeypatch):
 
     for f_expected, f_test in zip(expected_files, test_files):
         # get trees
-        fp_expected = f"tests/data/SoftGripper/expected_output/{f_expected}"
+        fp_expected = f"tests/data/{fm_group}/expected_output/{f_expected}"
         fp_test = f"{filepath_test_dir.as_posix()}/{f_test}"
         root_expected = mut.get_element_tree(fp_expected)
         root_test = mut.get_element_tree(fp_test)
