@@ -1,0 +1,193 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<featureModel>
+  <struct>
+    <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#root">
+      <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#module-component-group-Angle_Profil_3">
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Angle_Profil_3" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_17" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_18" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_19" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_20" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_21" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_22" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_23" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_24" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Roller_5" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Roller_6" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_23" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_24" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_25" />
+      </and>
+      <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#module-component-group-Ring_Mount_Bottom_4">
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_13" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_14" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_15" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_16" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_13" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_14" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_15" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_16" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Ring_Mount_Bottom_4" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Ring_Mount_Seal_4" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Ring_Mount_Top_4" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_13" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_14" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_15" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_16" />
+      </and>
+      <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#module-component-group-Wheel_1">
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Wheel_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Wheel_Axel_1" />
+      </and>
+      <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#module-component-group-Angle_Profil_4">
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Angle_Profil_4" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_25" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_26" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_27" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_28" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_29" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_30" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_31" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_32" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Roller_7" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Roller_8" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_26" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_27" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_28" />
+      </and>
+      <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#module-component-group-Fitted_Bolt_ISO_M8_1">
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Fitted_Bolt_ISO_M8_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Fitted_Bolt_ISO_M8_2" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Fitted_Bolt_ISO_M8_3" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Fitted_Bolt_ISO_M8_4" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Handle_Bar_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Motor_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Steering_Link_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Tie_Rod_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Wheel_Base_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Wheel_Base_2" />
+      </and>
+      <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#module-component-group-Angle_Profil_1">
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Angle_Profil_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_2" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_3" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_4" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_5" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_6" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_7" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_8" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Roller_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Roller_2" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_17" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_18" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_19" />
+      </and>
+      <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#module-component-group-Angle_Profil_2">
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Angle_Profil_2" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_10" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_11" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_12" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_13" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_14" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_15" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_16" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M16_9" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Roller_3" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Roller_4" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_20" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_21" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_22" />
+      </and>
+      <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#module-component-group-Ring_Mount_Bottom_1">
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_2" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_3" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_4" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Ring_Mount_Bottom_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Ring_Mount_Seal_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Ring_Mount_Top_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_2" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_3" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_4" />
+      </and>
+      <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#module-component-group-Wheel_2">
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Wheel_2" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Wheel_Axel_2" />
+      </and>
+      <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#module-component-group-Ring_Mount_Bottom_3">
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_10" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_11" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_12" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_9" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_10" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_11" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_12" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_9" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Ring_Mount_Bottom_3" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Ring_Mount_Seal_3" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Ring_Mount_Top_3" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_10" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_11" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_12" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_9" />
+      </and>
+      <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#module-component-group-Wheel_4">
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M24_4" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Wheel_4" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Wheel_Axel_4" />
+      </and>
+      <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#module-component-group-Ring_Mount_Bottom_2">
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_5" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_6" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_7" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Countersunk_Bolt_M12_8" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Ring_Mount_Bottom_2" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Ring_Mount_Seal_2" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Ring_Mount_Top_2" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_5" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_6" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_7" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M12_8" />
+      </and>
+      <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#module-component-group-Wheel_3">
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M24_3" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Wheel_3" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Wheel_Axel_3" />
+      </and>
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Front_Axel" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_1" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_2" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_3" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_4" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_1" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_17" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_18" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_19" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_2" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_20" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_21" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_22" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_23" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_24" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_25" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_26" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_27" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_28" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_3" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_4" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_5" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_6" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_7" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Hexagon_Bolt_M12_8" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Rear_Axel" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M24_1" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Stop_Nut_M24_2" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Wheel_Base_3" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Wheel_Base_4" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#C-Frame" />
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Tarpaulin_BG-SK_2" />
+    </and>
+  </struct>
+</featureModel>
