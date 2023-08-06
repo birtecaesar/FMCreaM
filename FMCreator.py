@@ -3,7 +3,7 @@ from collections import defaultdict
 
 from SPARQLWrapper import JSON, SPARQLWrapper, SPARQLWrapper2
 
-ENDPOINT_URL = "http://localhost:7200/repositories/SoftGripper"
+ENDPOINT_URL = "http://localhost:7200/repositories/TuggerTrain"
 
 MODULESQUERY = """
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -56,18 +56,31 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX vdi2206: <http://www.hsu-ifa.de/ontologies/VDI2206#>
 
-SELECT ?mechatronicsystem ?component ?module
+SELECT ?mechatronicsystem ?component 
 WHERE {
-  ?component a vdi2206:Component .
-  ?mechatronicsystem a vdi2206:System .
-  OPTIONAL {
-    ?module a vdi2206:Module .
+    ?component a vdi2206:Component .
+    ?mechatronicsystem a vdi2206:System .
     ?mechatronicsystem vdi2206:consistsOf ?component .
-    FILTER NOT EXISTS { ?module vdi2206:consistsOf ?component }
-  }
-  FILTER(!BOUND(?module) || BOUND(?module) && EXISTS { ?module a vdi2206:Module })
-}
+    }
 """
+# PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# PREFIX owl: <http://www.w3.org/2002/07/owl#>
+# PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+# PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+# PREFIX vdi2206: <http://www.hsu-ifa.de/ontologies/VDI2206#>
+#
+# SELECT ?mechatronicsystem ?component ?module
+# WHERE {
+#   ?component a vdi2206:Component .
+#   ?mechatronicsystem a vdi2206:System .
+#   OPTIONAL {
+#     ?module a vdi2206:Module .
+#     ?mechatronicsystem vdi2206:consistsOf ?component .
+#     FILTER NOT EXISTS { ?module vdi2206:consistsOf ?component }
+#   }
+#   FILTER(!BOUND(?module) || BOUND(?module) && EXISTS { ?module a vdi2206:Module })
+# }
+# """
 SYSTEMQUERY = """
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
@@ -92,20 +105,20 @@ def get_sparql_results(endpoint_url, query):
 def add_to_lowest_layer(child, parents, query_dict):
     """add separate components to lowest available parent layer"""
     for k_1, layer_1 in query_dict.items():
+        # check if lowest parent layer is a system
+        if k_1 in parents:
+            layer_1.update({child: {}})
+            return
         for k_2, layer_2 in layer_1.items():
+            # check if lowest parent layer is a module
+            if k_2 in parents:
+                layer_2.update({child: []})
+                return
             for k_3, layer_3 in layer_2.items():
                 # check if lowest parent layer is a component
                 if k_3 in parents:
                     layer_3.append(child)
                     return
-            # check if lowest parent layer is a module
-            if k_2 in parents:
-                layer_2.update({child: []})
-                return
-        # check if lowest parent layer is a system
-        if k_1 in parents:
-            layer_1.update({child: {}})
-            return
     # if no layer corresponds to any of the available parents, create a new level 1 layer
     query_dict.update({child: {}})
     return
@@ -128,7 +141,7 @@ def prettify_xml(element, indent="  "):
 def main(filename: str) -> None:
     # get sparql query results
     component_results = get_sparql_results(ENDPOINT_URL, MODULESQUERY)
-    systemofsystem_results = get_sparql_results(ENDPOINT_URL, SYSTEMQUERY)
+    systemofsystem_results = get_sparql_results(ENDPOINT_URL, SYSTEMSQUERY)
     module_results = get_sparql_results(ENDPOINT_URL, SYSMOQUERY)
     components_of_system_results = get_sparql_results(ENDPOINT_URL, SYSCOQUERY)
     system_results = get_sparql_results(ENDPOINT_URL, SYSTEMQUERY)
@@ -137,7 +150,9 @@ def main(filename: str) -> None:
     components = create_components(component_results)
     modules = create_modules(components, module_results)
     systems = create_systems(modules, system_results, systemofsystem_results)
-    separate_components = get_separate_components(components_of_system_results, systems)
+    separate_components = get_separate_components(
+        components_of_system_results, component_results, systems
+    )
     # use the highest available layer as final dict
     final_dict = (
         systems if systems else modules if modules else components if components else {}
@@ -202,13 +217,18 @@ def setup_xml_structure(final_dict, separate_components):
     return fm_xml
 
 
-def get_separate_components(components_of_system_results, systems):
+def get_separate_components(components_of_system_results, component_results, systems):
+    components_of_modules = set()
+    if component_results:
+        for c_result in component_results.bindings:
+            components_of_modules.add(c_result["component"].value)
     separate_components = defaultdict(list)
     if components_of_system_results:
         for sc_result in components_of_system_results.bindings:
             key = sc_result["component"].value
             value = sc_result["mechatronicsystem"].value
-            separate_components[key].append(value)
+            if key not in components_of_modules:
+                separate_components[key].append(value)
         for component, parents in separate_components.items():
             add_to_lowest_layer(component, parents, systems)
     return separate_components
@@ -250,5 +270,5 @@ def create_components(component_results):
 
 
 if __name__ == "__main__":
-    filename = "F4S60A70D15R50.xml"
+    filename = "TuggerTrain/input/GB1-C-Frame.xml"
     main(filename)
