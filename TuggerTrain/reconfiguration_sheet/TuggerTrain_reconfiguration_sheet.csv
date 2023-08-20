@@ -1,0 +1,43 @@
+#;ContextInformation;RelationshipType;RelatedContextInformation;Property;ContextDomain;Unit;DataType;C-Frame (imp not);C-Frame (imp);E-Frame (imp not);E-Frame (imp);Tarpaulin_BG-SK (imp not);Tarpaulin_BG-SK (imp);Tarpaulin_BG-SK_1 (imp not);Tarpaulin_BG-SK_1 (imp);Tarpaulin_BG-SK_2 (imp not);Tarpaulin_BG-SK_2 (imp);U-Frame (imp not);U-Frame (imp)
+IEC 61850-7-4;MeteorologicalInformation;;;;;;;;;;;;;;;;;;
+IEC 61850-7-4;HorizontalWindSpeed;;;;;;;;;;;;;;;;;;
+IEC 61850-7-4;VerticalWindSpeed;;;;;;;;;;;;;;;;;;
+IEC 61850-7-4;HorizontalWindDirection;;;;;;;;;;;;;;;;;;
+IEC 61850-7-4;VerticalWindDirection;;;;;;;;;;;;;;;;;;
+IEC 61850-7-4;WindGustSpeed;;;;;;;;;;;;;;;;;;
+IEC 61850-7-4;EnvironmentTemperature;;;;;;;;;;;;;;;;;;
+IEC 61850-7-4;RainFall;;SnowFall;;RainFall;;Bool;;;;;;RainFall;;RainFall;;RainFall;;
+IEC 61850-7-4;RainFall;influencedByRain;VisualRange;;;;;;;;;;;;;;;;
+IEC 61850-7-4;SnowFall;influencedBySnow;VisualRange;;SnowFall;;Bool;;;;;;SnowFall;;SnowFall;;SnowFall;;
+DIN ISO 28902-1;MeteorologicalOpticalRange;;;;;;;;;;;;;;;;;;
+DIN ISO 28902-1;RunwayVisualRange;;;;;;;;;;;;;;;;;;
+DIN ISO 28902-1;VerticalOpticalRange;;;;;;;;;;;;;;;;;;
+DIN ISO 28902-1;SlantOpticalRange;;;;;;;;;;;;;;;;;;
+DIN ISO 28902-1;SlantVisualRange;;;;;;;;;;;;;;;;;;
+DIN ISO 28902-1;Vision;;;;;;;;;;;;;;;;;;
+DIN ISO 28902-1;VisualRange;;;;;;;;;;;;;;;;;;
+VDI 5100-1;Source;hasSourceGeolocation;Geolocation;;;;;;;;;;;;;;;;
+ISO 19762-5;Geolocation;;;;;;;;;;;;;;;;;;
+VDI 5100-1;Target;hasTargetGeolocation;Geolocation;;;;;;;;;;;;;;;;
+VDA 4500;Small-Load-Carrier;;;hasObjectDimension;;;;;;;;;;;;;;;
+VDA 4501;R-KLT_6429;;;;R_KLT_6429;;Bool;;R_KLT_6429;;R_KLT_6429;;;;;;;;
+VDA 4505;R-KLT_6415;;;;R_KLT_6415;;Bool;;R_KLT_6415;;R_KLT_6415;;;;;;;;
+VDA 4506;R-KLT_4329;;;;R_KLT_4329;;Bool;;R_KLT_4329;;R_KLT_4329;;;;;;;;
+VDA 4507;R-KLT_4315;;;;R_KLT_4315;;Bool;;R_KLT_4315;;R_KLT_4315;;;;;;;;
+VDA 4508;R-KLT_3215;;;;R_KLT_3215;;Bool;;R_KLT_3215;;R_KLT_3215;;;;;;;;
+ISA 88;State;;;;;;;;;;;;;;;;;;
+ISA 88;Wait;;;;;;;;;;;;;;;;;;
+ISA 88;Idle;;;;;;;;;;;;;;;;;;
+VDI 5100-1;TransportOrder;;Target;;;;;;;;;;;;;;;;
+VDI 5100-1;TransportOrder;;Source;;;;;;;;;;;;;;;;
+VDI 5100-1;TransportOrder;;Transport Unit;;;;;;;;;;;;;;;;
+VDI 5100-1;TransportUnit;;;hasObjectWeight;0-1600;kg;Float;>1600;;>1600;;;;;;;;>1000;
+;Load-Carrier;;;;;;;;;;;;;;;;;;
+;EPAL1;;;;EPAL1;;Bool;;EPAL1;;EPAL1;;;;;;;;
+;EPAL2;;;;EPAL2;;Bool;;EPAL2;;EPAL2;;;;;;;;EPAL2
+;EPAL3;;;;EPAL3;;Bool;;EPAL3;;EPAL3;;;;;;;;EPAL3
+;EPAL4;;;;EPAL4;;Bool;;EPAL4;;EPAL4;;;;;;;;
+;EPAL5;;;;EPAL5;;Bool;;EPAL5;;EPAL5;;;;;;;;
+;EPAL6;;;;EPAL6;;Bool;;EPAL6;;EPAL6;;;;;;;;
+;EPAL7;;;;EPAL7;;Bool;;EPAL7;;EPAL7;;;;;;;;
+;Capabilities;;;;Transport;;Bool;;;;;;;;;;;;

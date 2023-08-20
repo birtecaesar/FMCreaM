@@ -1,0 +1,151 @@
+{
+    "attributes": [],
+    "contexts": [
+        {
+            "id": "context[RainFall]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[SnowFall]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[R_KLT_6429]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[R_KLT_6415]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[R_KLT_4329]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[R_KLT_4315]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[R_KLT_3215]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[hasObjectWeight]",
+            "min": 0,
+            "max": 1600
+        },
+        {
+            "id": "context[EPAL1]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[EPAL2]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[EPAL3]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[EPAL4]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[EPAL5]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[EPAL6]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[EPAL7]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[Transport]",
+            "min": 0,
+            "max": 1
+        }
+    ],
+    "configuration": {
+        "selected_features": [],
+        "attribute_values": [],
+        "context_values": []
+    },
+    "constraints": [
+        "feature[root]",
+        "((feature[C-Frame] = 1) or (feature[U-Frame] = 1) or (feature[Tarpaulin_BG-SK_1] = 1) or (feature[Tarpaulin_BG-SK] = 1) or (feature[E-Frame] = 1) or (feature[Tarpaulin_BG-SK_2] = 1)) impl feature[root] = 1",
+        "context[RainFall] = 1 impl (feature[Tarpaulin_BG-SK] = 1)",
+        "context[RainFall] = 1 impl (feature[Tarpaulin_BG-SK_1] = 1)",
+        "context[RainFall] = 1 impl (feature[Tarpaulin_BG-SK_2] = 1)",
+        "context[SnowFall] = 1 impl (feature[Tarpaulin_BG-SK] = 1)",
+        "context[SnowFall] = 1 impl (feature[Tarpaulin_BG-SK_1] = 1)",
+        "context[SnowFall] = 1 impl (feature[Tarpaulin_BG-SK_2] = 1)",
+        "context[R_KLT_6429] = 1 impl (feature[C-Frame] = 1)",
+        "context[R_KLT_6429] = 1 impl (feature[E-Frame] = 1)",
+        "context[R_KLT_6415] = 1 impl (feature[C-Frame] = 1)",
+        "context[R_KLT_6415] = 1 impl (feature[E-Frame] = 1)",
+        "context[R_KLT_4329] = 1 impl (feature[C-Frame] = 1)",
+        "context[R_KLT_4329] = 1 impl (feature[E-Frame] = 1)",
+        "context[R_KLT_4315] = 1 impl (feature[C-Frame] = 1)",
+        "context[R_KLT_4315] = 1 impl (feature[E-Frame] = 1)",
+        "context[R_KLT_3215] = 1 impl (feature[C-Frame] = 1)",
+        "context[R_KLT_3215] = 1 impl (feature[E-Frame] = 1)",
+        "context[hasObjectWeight] > 1600 impl (feature[C-Frame] = 0)",
+        "context[hasObjectWeight] > 1600 impl (feature[E-Frame] = 0)",
+        "context[hasObjectWeight] > 1000 impl (feature[U-Frame] = 0)",
+        "context[EPAL1] = 1 impl (feature[C-Frame] = 1)",
+        "context[EPAL1] = 1 impl (feature[E-Frame] = 1)",
+        "context[EPAL2] = 1 impl (feature[C-Frame] = 1)",
+        "context[EPAL2] = 1 impl (feature[E-Frame] = 1)",
+        "context[EPAL2] = 1 impl (feature[U-Frame] = 1)",
+        "context[EPAL3] = 1 impl (feature[C-Frame] = 1)",
+        "context[EPAL3] = 1 impl (feature[E-Frame] = 1)",
+        "context[EPAL3] = 1 impl (feature[U-Frame] = 1)",
+        "context[EPAL4] = 1 impl (feature[C-Frame] = 1)",
+        "context[EPAL4] = 1 impl (feature[E-Frame] = 1)",
+        "context[EPAL5] = 1 impl (feature[C-Frame] = 1)",
+        "context[EPAL5] = 1 impl (feature[E-Frame] = 1)",
+        "context[EPAL6] = 1 impl (feature[C-Frame] = 1)",
+        "context[EPAL6] = 1 impl (feature[E-Frame] = 1)",
+        "context[EPAL7] = 1 impl (feature[C-Frame] = 1)",
+        "context[EPAL7] = 1 impl (feature[E-Frame] = 1)",
+        "(feature[Tarpaulin_BG-SK_1] = 1) impl (feature[Tarpaulin_BG-SK_2] = 0)",
+        "(feature[Tarpaulin_BG-SK_2] = 1) impl (feature[Tarpaulin_BG-SK_1] = 0)",
+        "(feature[Tarpaulin_BG-SK_1] = 1) impl (feature[U-Frame] = 0)",
+        "(feature[U-Frame] = 1) impl (feature[Tarpaulin_BG-SK_1] = 0)",
+        "(feature[Tarpaulin_BG-SK_2] = 1) impl (feature[U-Frame] = 0)",
+        "(feature[U-Frame] = 1) impl (feature[Tarpaulin_BG-SK_2] = 0)",
+        "(feature[E-Frame] = 1) impl (feature[Tarpaulin_BG-SK_1] = 1)",
+        "(feature[Tarpaulin_BG-SK] = 1) impl (feature[U-Frame] = 1)",
+        "(feature[Tarpaulin_BG-SK_1] = 1) impl (feature[E-Frame] = 1)",
+        "(feature[U-Frame] = 1) impl (feature[Tarpaulin_BG-SK] = 1)",
+        "(feature[C-Frame] = 1) impl (feature[Tarpaulin_BG-SK_2] = 1)",
+        "(feature[Tarpaulin_BG-SK_2] = 1) impl (feature[C-Frame] = 1)",
+        "(context[Transport] = 0) impl not feature[root]"
+    ],
+    "optional_features": {
+        "C-Frame": [],
+        "E-Frame": [],
+        "Tarpaulin_BG-SK": [],
+        "Tarpaulin_BG-SK_1": [],
+        "Tarpaulin_BG-SK_2": [],
+        "U-Frame": []
+    },
+    "preferences": []
+}
