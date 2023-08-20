@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<featureModel>
+  <struct>
+      <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#module-component-group-2792">
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Bolt1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Bolt2" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Bolt3" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Bolt4" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Bolt5" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Bolt6" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Motor" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#MotorShaftMount" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#RotaryTablePlate" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#SupportPlate1" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#SupportPlate2" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#SupportPlate3" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Tripod" />
+        <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#WorkpieceFixture" />
+      </and>
+  </struct>
+</featureModel>

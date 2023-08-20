@@ -1,0 +1,18 @@
+#;ContextInformation;RelationshipType;RelatedContextInformation;Property;ContextDomain;Unit;DataType;RectangularWorkpieceFixture (imp not);RectangularWorkpieceFixture (imp);WorkpieceFixture (imp not);WorkpieceFixture (imp);WorkpieceFixturePositioningPlate (imp not);WorkpieceFixturePositioningPlate (imp)
+VDI3682;Product;;;hasDiameter;0-50; mm;float;;;;40;;
+VDI3682;Product;;;hasHeight;10-40; mm;float;;5-40;;10-50;;
+VDI3682;Product;;;hasDepth;0-20; mm;float;;10-20;;;;
+VDI3682;Product;;;hasLength;0-40; mm;float;;10-40;;;;
+VDI3682;Product;hasFeature;ProductFeature;;;;;;;;;;
+;ProductFeature;;;;ThreadedHole, BlindHole, Counterbore, ThroughHole;;bool;ThroughHole;;ThroughHole;;;
+VDI3682;Product;hasPickUpPosition;Geolocation;;A, B, C;;bool;;;;;;
+VDI3682;Product;hasDropOffPosition;Geolocation;;D, E;;bool;;;;;;
+VDI3682;Product;hasState;State;;;;;;;;;;
+VDI3682;State;;;;RawPart, IntermediateProduct, FinishedProduct;;bool;;;;;;
+VDI3682;Process;;;;Drilling, Tapping, Counterboring;;bool;;;;;;
+VDI3682;TechnicalResource;hasSystemState;State(ISA88);;;;;;;;;;
+ISA88;State(ISA88);;;;;;;;;;;;
+ISA88;Waiting;;;;True, False;;bool;;;;;;
+ISA88;Idle;;;;True, False;;bool;;;;;;
+ISO 19762-5;Geolocation;;;hasGeolocation;;;;;;;;;
+;Capabilities;;;;Drilling, Tapping, Counterboring;;bool;;;;;;

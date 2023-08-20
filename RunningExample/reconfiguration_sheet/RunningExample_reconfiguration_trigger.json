@@ -1,0 +1,88 @@
+{
+    "attributes": [],
+    "contexts": [
+        {
+            "id": "context[hasDiameter]",
+            "min": 0,
+            "max": 50
+        },
+        {
+            "id": "context[hasHeight]",
+            "min": 10,
+            "max": 40
+        },
+        {
+            "id": "context[hasDepth]",
+            "min": 0,
+            "max": 20
+        },
+        {
+            "id": "context[hasLength]",
+            "min": 0,
+            "max": 40
+        },
+        {
+            "id": "context[ThreadedHole]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[BlindHole]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[Counterbore]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[ThroughHole]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[Drilling]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[Tapping]",
+            "min": 0,
+            "max": 1
+        },
+        {
+            "id": "context[Counterboring]",
+            "min": 0,
+            "max": 1
+        }
+    ],
+    "configuration": {
+        "selected_features": [],
+        "attribute_values": [],
+        "context_values": []
+    },
+    "constraints": [
+        "feature[module-component-group-2792]",
+        "((feature[WorkpieceFixture] = 1) or (feature[WorkpieceFixturePositioningPlate] = 1) or (feature[RectangularWorkpieceFixture] = 1)) impl feature[module-component-group-2792] = 1",
+        "context[hasDiameter] = 40 impl (feature[WorkpieceFixture] = 1)",
+        "context[ThroughHole] = 1 impl (feature[RectangularWorkpieceFixture] = 0)",
+        "context[ThroughHole] = 1 impl (feature[WorkpieceFixture] = 0)",
+        "((context[hasHeight] >= 10) and (context[hasHeight] <= 40)) impl((feature[WorkpieceFixture] = 1) or (feature[RectangularWorkpieceFixture] = 1))",
+        "((context[hasHeight] >= 5) and (context[hasHeight] <= 9)) impl((feature[RectangularWorkpieceFixture] = 1))",
+        "((context[hasHeight] >= 41) and (context[hasHeight] <= 50)) impl((feature[WorkpieceFixture] = 1))",
+        "((context[hasDepth] >= 10) and (context[hasDepth] <= 20)) impl(feature[RectangularWorkpieceFixture] = 1)",
+        "((context[hasLength] >= 10) and (context[hasLength] <= 40)) impl(feature[RectangularWorkpieceFixture] = 1)",
+        "(feature[WorkpieceFixture] = 1) impl (feature[WorkpieceFixturePositioningPlate] = 0)",
+        "(feature[WorkpieceFixturePositioningPlate] = 1) impl (feature[WorkpieceFixture] = 0)",
+        "(feature[RectangularWorkpieceFixture] = 1) impl (feature[WorkpieceFixturePositioningPlate] = 1)",
+        "(feature[WorkpieceFixturePositioningPlate] = 1) impl (feature[RectangularWorkpieceFixture] = 1)",
+        "((context[Drilling] = 0) and (context[Tapping] = 0) and (context[Counterboring] = 0)) impl (feature[module-component-group-2792] = 0)"
+    ],
+    "optional_features": {
+        "RectangularWorkpieceFixture": [],
+        "WorkpieceFixture": [],
+        "WorkpieceFixturePositioningPlate": []
+    },
+    "preferences": []
+}
