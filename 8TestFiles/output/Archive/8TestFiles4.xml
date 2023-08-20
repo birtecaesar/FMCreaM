@@ -1,0 +1,144 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<featureModel>
+  <struct>
+    <alt abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#root">
+      <and abstract="true" name="feature_77">
+        <feature name="http://www.hsu-ifa.de/ontologies/VDI2206#Cuboid" />
+        <feature name="http://www.hsu-ifa.de/ontologies/VDI2206#Cylinder" />
+      </and>
+      <and abstract="true" name="feature_16">
+        <feature name="http://www.hsu-ifa.de/ontologies/VDI2206#Cube" />
+        <alt abstract="true" name="feature_51_disj">
+          <feature name="http://www.hsu-ifa.de/ontologies/VDI2206#Cube2" />
+          <feature name="http://www.hsu-ifa.de/ontologies/VDI2206#L-Shape" />
+      </alt>
+      </and>
+      <and abstract="true" name="feature_20">
+        <feature name="http://www.hsu-ifa.de/ontologies/VDI2206#Cuboid1" />
+        <feature name="http://www.hsu-ifa.de/ontologies/VDI2206#Cuboid2" />
+  </and>
+  </alt>
+  </struct>
+  <constraints>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube</var>
+        <var>feature_51_disj</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube2</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#L-Shape</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube</var>
+        <var>feature_51_disj</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>feature_51_disj</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>feature_51_disj</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube2</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>feature_51_disj</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#L-Shape</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>feature_51_disj</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube2</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube2</var>
+        <var>feature_51_disj</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube2</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#L-Shape</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube2</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#L-Shape</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#L-Shape</var>
+        <var>feature_51_disj</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#L-Shape</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube2</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#L-Shape</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cuboid1</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cuboid2</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cuboid2</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cuboid1</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cuboid</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cylinder</var>
+    </imp>
+    </rule>
+    <rule>
+      <imp>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cylinder</var>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cuboid</var>
+      </imp>
+    </rule>
+  </constraints>
+</featureModel>

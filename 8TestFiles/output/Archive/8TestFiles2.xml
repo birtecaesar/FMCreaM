@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<featureModel>
+  <struct>
+    <and abstract="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#root">
+      <feature mandatory="true" name="http://www.hsu-ifa.de/ontologies/VDI2206#Cube" />
+      <feature name="http://www.hsu-ifa.de/ontologies/VDI2206#Cube2" />
+      <feature name="http://www.hsu-ifa.de/ontologies/VDI2206#L-Shape" />
+  </and>
+  </struct>
+  <constraints>
+    <rule>
+      <eq>
+        <var>http://www.hsu-ifa.de/ontologies/VDI2206#Cube2</var>
+        <not>
+          <var>http://www.hsu-ifa.de/ontologies/VDI2206#L-Shape</var>
+        </not>
+      </eq>
+    </rule>
+  </constraints>
+</featureModel>
