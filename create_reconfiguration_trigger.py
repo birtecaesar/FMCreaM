@@ -4,12 +4,10 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 
-from FamilyCreator import get_element_tree, parse_xml_to_dict, parse_constraints_to_dict
+from FamilyCreator import get_element_tree, parse_constraints_to_dict, parse_xml_to_dict
 
 FEATURE_MODEL_NAME = "TuggerTrain"
-FILENAME = (
-    f"./{FEATURE_MODEL_NAME}/reconfiguration_sheet/{FEATURE_MODEL_NAME}_reconfiguration_sheet.csv"
-)
+FILENAME = f"./{FEATURE_MODEL_NAME}/reconfiguration_sheet/{FEATURE_MODEL_NAME}_reconfiguration_sheet.csv"
 INPUT_FILEPATH = f"./{FEATURE_MODEL_NAME}/feature_model/{FEATURE_MODEL_NAME}2.xml"
 DEFAULT_FEATURES = [
     "#",
@@ -195,6 +193,7 @@ def create_optional_features(df):
 def create_context_constraints(df: pd.DataFrame) -> list[str]:
     context_constraints = []
     ranges = {0: [], 1: []}
+    bools = {}
     for idx_row, row in df.iterrows():
         # get row properties
         props = get_row_properties(row)
@@ -234,6 +233,22 @@ def create_context_constraints(df: pd.DataFrame) -> list[str]:
                 print(
                     "WARNING: You have to specify (imp) or (imp not) in your table header for optional features!"
                     f"I don't now how to handle {opt_name=} and have to continue without it."
+                )
+                continue
+
+            if opt_val in ["True", True, "False", False]:
+                if isinstance(opt_val, str):
+                    opt_val = 1 if opt_val == "True" else 0
+                if context_constraint_name not in bools:
+                    bools[context_constraint_name] = {0: [], 1: []}
+                # we can handle imp_nots individually
+                bools[context_constraint_name][impl_bool].append(
+                    {
+                        "context_constraint_name": context_constraint_name,
+                        "opt_name": opt_name,
+                        "impl_bool": impl_bool,
+                        "opt_val": int(opt_val),
+                    }
                 )
                 continue
 
@@ -295,7 +310,7 @@ def create_context_constraints(df: pd.DataFrame) -> list[str]:
                                 f"Please check for typos and correct specification."
                             )
                             continue
-                        val = b[len(comp_sign):]
+                        val = b[len(comp_sign) :]
                         context_constraints.append(
                             f"context[{context_constraint_name}] {comp_sign} {val} impl (feature[{opt_name}] = "
                             f"{impl_bool})"
@@ -319,7 +334,7 @@ def create_context_constraints(df: pd.DataFrame) -> list[str]:
                             f"Please check for typos and correct specification."
                         )
                         continue
-                    val = opt_val[len(comp_sign):]
+                    val = opt_val[len(comp_sign) :]
                     context_constraints.append(
                         f"context[{context_constraint_name}] {comp_sign} {val} impl (feature[{opt_name}] = "
                         f"{impl_bool})"
@@ -352,12 +367,80 @@ def create_context_constraints(df: pd.DataFrame) -> list[str]:
                     f"({' or '.join(or_constraints)}) impl (feature[{opt_name}] = {impl_bool})"
                 )
 
-    split_ranges_by_constraint_and_optionals(context_constraints, ranges)
+    add_bools_to_context_constraints(bools, context_constraints)
+    split_ranges_by_constraint_and_optionals(ranges, context_constraints)
     return context_constraints
 
 
+def add_bools_to_context_constraints(
+    bools: dict, context_constraints: list[str]
+) -> None:
+    """
+    if several bool constraints are available, they must be combined with an 'or' if they are of type 'impl'.
+    constraints of type 'impl_not', on the other hand, must be added individually!
+
+    examples:
+    =========
+    - one impl_not constraint (True)
+      - con_a(opt_a = 0) = 1  ==============================> read: "con_a = True at location opt_a (impl_not)"
+
+        => '(context[con_a] = 1) impl (feature[opt_a] = 0)'
+
+    - two impl_not constraints (True)
+      - (con_a(opt_a = 0) = 1 and con_a(opt_b = 0)) = 1
+
+        => '(context[con_a] = 1) impl (feature[opt_a] = 0)'
+        => '(context[con_a] = 1) impl (feature[opt_b] = 0)'
+
+    - two impl constraints (True)
+      - (con_a(opt_a = 1) = 1 and con_a(opt_b = 1)) = 1
+
+        => '(context[con_a] = 1) impl (feature[opt_a] = 0 or feature[opt_b] = 0)'
+
+    - two impl constraints (False)
+      - (con_a(opt_a = 1) = 0 and con_a(opt_b = 1)) = 0
+
+        => '(context[con_a] = 0) impl (feature[opt_a] = 0 or feature[opt_b] = 0)'
+
+    - two impl constraints (True and False)
+      - (con_a(opt_a = 1) = 0 and con_a(opt_b = 1)) = 1
+
+        => '(context[con_a] = 0) impl (feature[opt_a] = 0)
+        => '(context[con_a] = 1) impl (feature[opt_b] = 0)'
+    """
+
+    def _get_vals(d: dict) -> tuple:
+        return d["context_constraint_name"], d["opt_val"], d["opt_name"], d["impl_bool"]
+
+    if bools:
+        impls = defaultdict(dict)
+        for ccn, ccn_values in bools.items():
+            # we have to add impl_not constraints separately
+            for impl_not_dict in ccn_values[0]:
+                ccn, ov, on, ib = _get_vals(impl_not_dict)
+                context_constraints.append(
+                    f"(context[{ccn}] = {ov}) impl (feature[{on}] = {ib})"
+                )
+            # we have to add impl constraints as 'or' connections -> first, we collect them here...
+            for impl_dict in ccn_values[1]:
+                ccn, ov, on, ib = _get_vals(impl_dict)
+                if ccn not in impls:
+                    impls[ccn].update({0: [], 1: []})
+                impls[ccn][ov].append(f"feature[{on}] = {ib}")
+
+        if impls:
+            # ...and then add them to the context_constraints here
+            for ccn, ccn_values in impls.items():
+                for opt_val, feature_strs in ccn_values.items():
+                    if not feature_strs:
+                        continue
+                    context_constraints.append(
+                        f"(context[{ccn}] = {opt_val}) impl ({' or '.join(feature_strs)})"
+                    )
+
+
 def split_ranges_by_constraint_and_optionals(
-    context_constraints: list[str], ranges: dict[int, list[dict]]
+    ranges: dict[int, list[dict]], context_constraints: list[str]
 ) -> None:
     """this function determines the full range of all optional features for each constraint and splits these ranges
     according to validity of each optional feature.
