@@ -194,6 +194,7 @@ def create_context_constraints(df: pd.DataFrame) -> list[str]:
     context_constraints = []
     ranges = {0: [], 1: []}
     bools = {}
+    enums = defaultdict(dict)
     for idx_row, row in df.iterrows():
         # get row properties
         props = get_row_properties(row)
@@ -236,7 +237,34 @@ def create_context_constraints(df: pd.DataFrame) -> list[str]:
                 )
                 continue
 
+            if row["DataType"] == "Enum":
+                opt_enums = [x.strip() for x in opt_val.split(",")]
+                context_domain_enums = [
+                    x.strip() for x in row["ContextDomain"].split(",")
+                ]
+                if not all(x in context_domain_enums for x in opt_enums):
+                    raise ValueError(
+                        f"Unknown {opt_enums=} for {opt_name=}. Allowed {context_domain_enums=}."
+                    )
+                for opt_enum in opt_enums:
+                    if opt_enum not in enums:
+                        enums[opt_enum] = {}
+                    if context_constraint_name not in enums[opt_enum]:
+                        enums[opt_enum].update(
+                            {context_constraint_name: {0: [], 1: []}}
+                        )
+                    enums[opt_enum][context_constraint_name][impl_bool].append(
+                        {
+                            "context_constraint_name": opt_enum,
+                            "opt_name": opt_name,
+                            "impl_bool": impl_bool,
+                            "opt_val": 1,
+                        }
+                    )
+                continue
+
             if opt_val in ["True", True, "False", False]:
+                assert row["DataType"] == "Bool"
                 if isinstance(opt_val, str):
                     opt_val = 1 if opt_val == "True" else 0
                 if context_constraint_name not in bools:
@@ -368,8 +396,21 @@ def create_context_constraints(df: pd.DataFrame) -> list[str]:
                 )
 
     add_bools_to_context_constraints(bools, context_constraints)
+    add_enums_to_context_constraints(context_constraints, enums)
     split_ranges_by_constraint_and_optionals(ranges, context_constraints)
     return context_constraints
+
+
+def add_enums_to_context_constraints(
+    context_constraints: list[str], enums: dict
+) -> None:
+    """
+    enums can be interpreted as a list of bool constraints, thus we can prepare a nested bool dict and reuse the
+    add_bools_to_context_constraints() function. tada!
+    """
+    if enums:
+        for opt_name, enum_bools in enums.items():
+            add_bools_to_context_constraints(enum_bools, context_constraints)
 
 
 def add_bools_to_context_constraints(
